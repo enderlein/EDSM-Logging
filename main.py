@@ -1,7 +1,7 @@
 import requests
 import json
 
-def cache_check(sys_name = '', sys_id = '', file = 'cache'): 
+def cache_check(sys_name = '', sys_id = '', file = './cache/traffic'): 
     # check cache for existing entry by name or id
     # prioritizes lookup by system id (if id is provided)
     with open(file, 'r') as f:
@@ -18,7 +18,10 @@ def cache_check(sys_name = '', sys_id = '', file = 'cache'):
             else:
                 return False
 
-def traffic(system_name, file = 'cache'):
+#def cache_write(data, file = 'traffic_cache'):
+#    with open(file, 'a')
+
+def traffic(system_name, file = './cache/traffic'):
     # check if system traffic data is in cache already
     c = cache_check(sys_name = system_name)
 
