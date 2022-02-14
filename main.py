@@ -11,15 +11,11 @@ def traffic(system_name, file = './cache/traffic'):
 
     cache_search = c.search(url, params)
     if cache_search:
-        print(f'Got {system_name} from cache')
         return cache_search
 
     # if not in cache get from api and add to cache
     else:
         r = requests.get(url, params = params)
-
-        print(f'Got {system_name} from API')
-
         d = json.loads(r.text)
 
         # add to cache
