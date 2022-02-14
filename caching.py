@@ -1,21 +1,22 @@
+import json
 import os
 
 class Cache():
-    def __init__(tag):
+    def __init__(self, tag):
         self.tag = tag
 
-        if not os.file.ispath('./cache'):
+        if not os.path.exists('./cache'):
             os.mkdir('cache')
             
         self.path = f'./cache/{self.tag}'
 
-    def create_cache_file():
+    def create_cache_file(self):
         # create cache directory and file if one doesn't exist
-        if not os.file.ispath(self.path):
+        if not os.path.exists(self.path):
             f = open(self.path, 'x')
             f.close()
 
-    def search(url, params):
+    def search(self, url, params):
         # url - url associated with entry being searched
         # params - params associated with entry being searched
         # search for entry in cache that matches given url and params
@@ -27,8 +28,8 @@ class Cache():
 
             return False
 
-    def write(url, params, data):
-        # url - url being queried
+    def write(self, url, params, data):
+        # url - url of endpoint being queried
         # params - params url was queried with
         # data - data returned from request
         # write an object to cache
@@ -36,6 +37,8 @@ class Cache():
         # anything that isn't actual data)
 
         with open(self.path, 'a') as f:
-            f.write(f'{{\"url\" : \"{url}\",
-                        \"params\" : \"{params}\",
-                        \"data\" : \"{data}\"}}')
+            d = {'url' : url,
+                'params' : params,
+                'data' : data}
+
+            f.write(json.dumps(d) + '\n')
