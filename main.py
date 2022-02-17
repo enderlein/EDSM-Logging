@@ -56,22 +56,4 @@ def traffic_report(dump_file_name, sys_name, radius, min_pop = -1):
         for report in tr:
             f.write(json.dumps(report) + '\n')
 
-traffic_report('data.txt', 'Alcor', 20, min_pop = 20000)
-
-
-#for system in systems:
-#    sys_name = system['name']
-#
-#    try:
-#        sys_population = system['information']['population']
-#    
-#    except(KeyError):
-#        sys_population = 0
-#    
-#    if sys_population > 0:
-#        sys_traffic = str(traffic(sys_name)['traffic']['day'])
-#        print(sys_name + "   :   " + sys_traffic)
-
-
-
-
+# traffic_report('data.txt', 'Alcor', 20, min_pop = 20000)
