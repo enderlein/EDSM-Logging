@@ -21,12 +21,3 @@ def traffic(system_name, file = './cache/traffic'):
         # add to cache
         c.write(url, params, d)
         return d
-
-
-
-print(traffic('Warkawa'))
-print()
-print(traffic('Sol'))
-print()
-print(traffic('Itzamnets'))
-

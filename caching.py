@@ -5,13 +5,14 @@ class Cache():
     def __init__(self, tag):
         self.tag = tag
 
+        # create cache directory if one doesn't exist
         if not os.path.exists('./cache'):
             os.mkdir('cache')
             
         self.path = f'./cache/{self.tag}'
 
     def create_cache_file(self):
-        # create cache directory and file if one doesn't exist
+        # create cache file if one doesn't exist
         if not os.path.exists(self.path):
             f = open(self.path, 'x')
             f.close()
