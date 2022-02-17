@@ -3,24 +3,24 @@ import os
 
 class Cache():
     def __init__(self, tag):
-        self.tag = tag
-
-        # create cache directory if one doesn't exist
-        if not os.path.exists('./cache'):
-            os.mkdir('cache')
-            
+        self.tag = tag 
         self.path = f'./cache/{self.tag}'
 
+        self.create_cache_file()
+
     def create_cache_file(self):
-        # create cache file if one doesn't exist
+        # create cache directory and file if one doesn't exist
+        if not os.path.exists('./cache'):
+            os.mkdir('cache')
+
         if not os.path.exists(self.path):
             f = open(self.path, 'x')
             f.close()
 
     def search(self, url, params):
-        # url - url associated with entry being searched
+        # url - url of endpoint associated with entry being searched
         # params - params associated with entry being searched
-        # search for entry in cache that matches given url and params
+        # searches for entry in cache that matches given url and params
         with open(self.path, 'r') as f:
             for line in f:
                 obj = json.loads(line)
