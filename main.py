@@ -3,8 +3,11 @@ import json
 import caching
 
 def traffic(system_name):
-    # system_name - name of syetem to get traffic data from
-    # returns dict
+    # STRING - system_name - name of syetem to get traffic data from
+    #
+    # returns DICT
+    #
+    # 
     #############################
     
     # check if system traffic data is in cache already
@@ -28,9 +31,13 @@ def traffic(system_name):
         return d
 
 def systems_radius(center_system_name, radius):
-    # center_system_name - name of system at the center of radius search
-    # radius - radius of sphere
-    # returns dict
+    # STRING - center_system_name - name of system at the center of radius search
+    # INT ---- radius - radius of sphere
+    #
+    # returns DICT
+    #
+    # Queries EDSM to get information on systems within a sphere radius from
+    # given system.
     #############################################
     c = caching.Cache('systems_radius')
 
@@ -50,11 +57,14 @@ def systems_radius(center_system_name, radius):
         return d
 
 def traffic_radius(center_system_name, radius, min_pop = -1):
-    # center_system_name - name of system which will be center of sphere
-    # radius - radius of the sphere
-    # get traffic data from systems in a sphere radius
-
-    # returns dict
+    # STRING - center_system_name - name of system which will be center of sphere
+    # INT ---- radius - radius of the sphere
+    # INT ---- min_pop - minimum population; func will not query api for traffic data from systems
+    #                    with a population below this value
+    #
+    # returns DICT
+    #
+    # Get traffic data from systems in a sphere radius
     ###############################
     systems = systems_radius(center_system_name, radius) 
 
