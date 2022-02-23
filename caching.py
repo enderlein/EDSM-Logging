@@ -1,6 +1,7 @@
 import json
 import os
 
+#TODO: Why are you doing this just use a db
 class Cache():
     def __init__(self, tag):
         self.tag = tag 
