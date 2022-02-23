@@ -24,13 +24,13 @@ def traffic_radius(center_system_name, radius, min_pop = -1):
     
     return r
 
-def traffic_report(sys_name, radius, min_pop = -1, filename = None, dumps = False):
+def traffic_report(*, system_name, radius, min_pop = -1, filename = None, dumps = False):
     # dump neat(er) traffic data into a text file
 
     if not filename:
-        default = f'{sys_name}-{int(time.time())}.json'
+        default = f'{system_name}-{int(time.time())}.json'
         filename = default
-    tr = traffic_radius(sys_name, radius, min_pop)
+    tr = traffic_radius(system_name, radius, min_pop)
     
     if dumps:
         with open(filename, 'a') as f:
