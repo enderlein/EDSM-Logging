@@ -6,10 +6,10 @@ import caching
 # TODO: results should be written to cache for potential use later, regardless cached = True/False
 
 # TODO: redundant
-def traffic(system_name, cached = False):
+def traffic(system_name, cache = False):
     """
     system_name* (string) - name of system 
-    cached (bool) - whether or not to use cached data (data in cache may be outdated)
+    cache (bool) - whether or not to use cached data (data in cache may be outdated)
 
     returns (dict)
 
@@ -21,13 +21,13 @@ def traffic(system_name, cached = False):
     params = {'systemName' : system_name}
     
     # TODO: just turn this into a decorator
-    if not cached:
+    if not cache:
         r = requests.get(url, params = params)
         d = json.loads(r.text)
 
         return d
 
-    elif cached:
+    elif cache:
         c = caching.Cache('traffic')
 
         # search cache, return search result if found
