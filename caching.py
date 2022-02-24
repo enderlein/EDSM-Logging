@@ -17,19 +17,19 @@ class Cache():
             f = open(self.path, 'x')
             f.close()
 
-    def search(self, url, params):
+    def search(self, *args, **kwargs):
         # url - url of endpoint associated with entry being searched
         # params - params associated with entry being searched
         # searches for entry in cache that matches given url and params
         with open(self.path, 'r') as f:
             for line in f:
                 obj = json.loads(line)
-                if url == obj["url"] and params == obj["params"]:
+                if args == obj["args"] and kwargs == obj["kwargs"]:
                     return obj["data"]
 
             return False
 
-    def write(self, url, params, data):
+    def write(self, data, *args, **kwargs):
         # url - url of endpoint being queried
         # params - params url was queried with
         # data - data returned from request
@@ -38,8 +38,10 @@ class Cache():
         # anything that isn't actual data)
 
         with open(self.path, 'a') as f:
-            d = {'url' : url,
-                'params' : params,
+            d = {'args' : args,
+                'kwargs' : kwargs,
                 'data' : data}
 
             f.write(json.dumps(d) + '\n')
+
+
