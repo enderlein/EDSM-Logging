@@ -4,6 +4,8 @@ import json
 import caching
 
 # TODO: results should be written to cache for potential use later, regardless cached = True/False
+
+# TODO: redundant
 def traffic(system_name, cached = False):
     """
     system_name* (string) - name of system 

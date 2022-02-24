@@ -2,8 +2,8 @@ import json
 import time
 
 import edsm
-# Merging traffic_report into traffic_radius 
 
+# TODO: Add loading bar or something
 def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, use_cache = False):
     """
     system_name* (string) - name of system at center of search sphere.
@@ -39,22 +39,6 @@ def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps 
             f.write(json.dumps(r) + '\n')
 
     return r
-
-
-## DEPRECATED
-def traffic_report(*, system_name, radius, min_pop = -1, filename = None, dumps = False):
-    # dump neat(er) traffic data into a text file
-    
-    tr = traffic_radius(system_name, radius, min_pop)
-    
-    if dumps:
-        if not filename:
-            default = f'{system_name}-{int(time.time())}.json'
-            filename = default
-        with open(filename, 'a') as f:
-            f.write(json.dumps(tr) + '\n')
-
-    return tr
 
 
 
