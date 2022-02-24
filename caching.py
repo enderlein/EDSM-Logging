@@ -44,4 +44,17 @@ class Cache():
 
             f.write(json.dumps(d) + '\n')
 
+def cacheable(func):
+    def wrapper(*args, **kwargs):
+        cache = kwargs['cache']
+        if cache:
+            c = Cache(func.__name__)
+            cache_search = c.search(args, kwargs)
 
+            if cache_search:
+                return cache_search
+
+        elif not cache:
+            func(*args, **kwargs)
+
+    return wrapper
