@@ -2,37 +2,55 @@ import json
 import time
 
 import edsm
+# Merging traffic_report into traffic_radius 
 
-def traffic_radius(center_system_name, radius, min_pop = -1):
-    # STRING - center_system_name - name of system which will be center of sphere
-    # INT ---- radius - radius of the sphere
-    # INT ---- min_pop - minimum population; func will not query api for traffic data from systems
-    #                    with a population below this value
-    #
-    # returns DICT
-    #
-    # Get traffic data from systems in a sphere radius
-    ###############################
-    systems = edsm.systems_radius(center_system_name, radius) 
+def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, use_cache = False):
+    """
+    system_name* (string) - name of system at center of search sphere.
+    radius* (int) - radius of search sphere (in lightyears).
+    min_pop (int) - minimum population, will not query api for traffic data from systems with a population below this value.
+    filename (string) - name of file to dump to (if dumps = True).
+    dumps (bool) - whether or not data is dumped to file (formatted as json).
+    use_cache (bool) - whether or not to use cached data (data in cache may be outdated)
+     
+    returns (dict)
+    
+    Get traffic data from systems in a sphere
+    """
+    
+    systems = edsm.systems_radius(system_name, radius, cached = use_cache)
 
-    r = {}
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+
+    r = {'timestamp' : timestamp, 'data' : {}}
+
     for system in systems:
         if 'population' in system['information']:
             if system['information']['population'] > min_pop:
-                d = {'traffic' : edsm.traffic(system['name'])['traffic']}
-                r[system['name']] = d
+                d = {'traffic' : edsm.traffic(system['name'], cached = use_cache)['traffic']}
+                r['data'][system['name']] = d
     
+    if dumps:
+        if not filename:
+            default = f'{system_name}-{int(time.time())}.json'
+            filename = default
+
+        with open(filename, 'a') as f:
+            f.write(json.dumps(r) + '\n')
+
     return r
 
+
+## DEPRECATED
 def traffic_report(*, system_name, radius, min_pop = -1, filename = None, dumps = False):
     # dump neat(er) traffic data into a text file
-
-    if not filename:
-        default = f'{system_name}-{int(time.time())}.json'
-        filename = default
+    
     tr = traffic_radius(system_name, radius, min_pop)
     
     if dumps:
+        if not filename:
+            default = f'{system_name}-{int(time.time())}.json'
+            filename = default
         with open(filename, 'a') as f:
             f.write(json.dumps(tr) + '\n')
 
