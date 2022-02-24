@@ -1,2 +1,11 @@
+*.db
+.vscode
+
+__pycache__
+venv/
+cache/
+
+*.json
+
 notes
-cache
+
