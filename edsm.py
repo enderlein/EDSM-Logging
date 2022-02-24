@@ -3,56 +3,77 @@ import json
 
 import caching
 
-def traffic(system_name):
-    # STRING - system_name - name of syetem to get traffic data from
-    #
-    # returns DICT
-    #
-    # Queries EDSM to get traffic data from given system
-    #############################
+def traffic(system_name, cached = False):
+    """
+    system_name* (string) - name of system 
+    cached (bool) - whether or not to use cached data (data in cache may be outdated)
+
+    returns (dict)
+
+    Queries EDSM to get traffic data for a single system
+    """
     
     # check if system traffic data is in cache already
-    c = caching.Cache('traffic')
-
     url = "https://www.edsm.net/api-system-v1/traffic"
     params = {'systemName' : system_name}
-
-    cache_search = c.search(url, params)
-    if cache_search:
-        return cache_search
-
-    # if not in cache get from api and add to cache
-    else:
+    
+    # TODO: just turn this into a decorator
+    if not cached:
         r = requests.get(url, params = params)
         d = json.loads(r.text)
-
-        # add to cache
-        c.write(url, params, d)
 
         return d
 
-def systems_radius(center_system_name, radius):
-    # STRING - center_system_name - name of system at the center of radius search
-    # INT ---- radius - radius of sphere
-    #
-    # returns DICT
-    #
-    # Queries EDSM to get information on systems within a sphere radius from
-    # given system.
-    #############################################
-    c = caching.Cache('systems_radius')
+    elif cached:
+        c = caching.Cache('traffic')
+
+        # search cache, return search result if found
+        cache_search = c.search(url, params)
+        if cache_search:
+            return cache_search
+
+        else:
+            # get from api and add to cache if not found in cache
+            r = requests.get(url, params = params)
+            d = json.loads(r.text)
+
+            c.write(url, params, d)
+
+        return d
+
+def systems_radius(system_name, radius, cached = False):
+    """
+    system_name* (string) - name of system at the center of the radius
+    radius* (int) - radius of search sphere (in lightyears)
+    cached (bool) - whether or not to use cached data (data in cache may be outdated)
+
+    returns (dict)
+
+    Queries EDSM to get information on systems within a sphere radius of given system
+    """
 
     url = "https://www.edsm.net/api-v1/sphere-systems"
-    params = {'systemName' : center_system_name, 'radius' : radius, 'showInformation' : 1}
+    params = {'systemName' : system_name, 'radius' : radius, 'showInformation' : 1}
 
-    cache_search = c.search(url, params)
-    if cache_search:
-        return cache_search
-
-    else:
+    if not cached:
         r = requests.get(url, params = params)
         d = json.loads(r.text)
 
-        c.write(url, params, d)
+        return d
+
+    elif cached:
+        c = caching.Cache('systems_radius')
+
+        # search cache, return search result if found
+        cache_search = c.search(url, params)
+        if cache_search:
+            return cache_search
+
+        else:
+            # get from api and add to cache if not found in cache
+            r = requests.get(url, params = params)
+            d = json.loads(r.text)
+
+            c.write(url, params, d)
 
         return d
