@@ -36,7 +36,7 @@ class Cache():
         # write an object to cache
         # TODO: make sure no error messages get written to cache (or
         # anything that isn't actual data)
-        # TODO: there is definitely a cleaner way to format this data
+        # TODO: there is definitely a cleaner way to format the cache
 
         # popping 'cache' flag because storing it messes with how search() works
         if 'cache' in kwargs:

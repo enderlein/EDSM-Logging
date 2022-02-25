@@ -3,10 +3,6 @@ import json
 
 import caching
 
-# TODO: results should be written to cache for potential use later, regardless cached = True/False
-
-# TODO: redundant
-
 @caching.cacheable
 def traffic(system_name, cache = False):
     """
