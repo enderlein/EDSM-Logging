@@ -1,11 +1,5 @@
-.vscode
+**/__pycache__/**
 
-__pycache__
-venv/
 cache/
-
 *.db
 *.json
-
-notes
-
