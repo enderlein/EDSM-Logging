@@ -17,25 +17,30 @@ class Cache():
             f = open(self.path, 'x')
             f.close()
 
-    def search(self, *args, **kwargs):
-        # url - url of endpoint associated with entry being searched
-        # params - params associated with entry being searched
-        # searches for entry in cache that matches given url and params
+    def search(self, args, kwargs):
+        # searches for entry in cache that matches given args and kwargs
+
+        # popping 'cache' flag here because it's never stored
+        if 'cache' in kwargs:
+            kwargs.pop('cache')
+
         with open(self.path, 'r') as f:
             for line in f:
                 obj = json.loads(line)
-                if args == obj["args"] and kwargs == obj["kwargs"]:
+                if list(args) == obj["args"] and kwargs == obj["kwargs"]:
                     return obj["data"]
 
             return False
 
-    def write(self, data, *args, **kwargs):
-        # url - url of endpoint being queried
-        # params - params url was queried with
-        # data - data returned from request
+    def write(self, data, args, kwargs):
         # write an object to cache
         # TODO: make sure no error messages get written to cache (or
         # anything that isn't actual data)
+        # TODO: there is definitely a cleaner way to format this data
+
+        # popping 'cache' flag because storing it messes with how search() works
+        if 'cache' in kwargs:
+            kwargs.pop('cache')
 
         with open(self.path, 'a') as f:
             d = {'args' : args,
@@ -46,15 +51,23 @@ class Cache():
 
 def cacheable(func):
     def wrapper(*args, **kwargs):
-        cache = kwargs['cache']
-        if cache:
-            c = Cache(func.__name__)
-            cache_search = c.search(args, kwargs)
+        if 'cache' in kwargs:
+            cache = kwargs['cache']
 
-            if cache_search:
-                return cache_search
+        else:
+            cache = False
 
-        elif not cache:
-            func(*args, **kwargs)
+        c = Cache(func.__name__)
+        cache_search = c.search(args, kwargs)
+
+        if cache and cache_search:
+            return cache_search
+
+        else:
+            d = func(*args, **kwargs)
+            if not cache_search:
+                c.write(d, args, kwargs)
+
+            return d
 
     return wrapper

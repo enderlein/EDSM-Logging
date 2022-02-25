@@ -4,7 +4,7 @@ import time
 import edsm
 
 # TODO: Add loading bar or something
-def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, use_cache = False):
+def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, cache = False):
     """
     system_name* (string) - name of system at center of search sphere.
     radius* (int) - radius of search sphere (in lightyears).
@@ -12,13 +12,13 @@ def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps 
     filename (string) - name of file to dump to (if dumps = True).
     dumps (bool) - whether or not data is dumped to file (formatted as json).
     use_cache (bool) - whether or not to use cached data (data in cache may be outdated)
-     
-    returns (dict)
     
+    returns (dict)
+
     Get traffic data from systems in a sphere
     """
     
-    systems = edsm.systems_radius(system_name, radius, cached = use_cache)
+    systems = edsm.systems_radius(system_name = system_name, radius = radius, cache = cache)
 
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
 
@@ -27,7 +27,9 @@ def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps 
     for system in systems:
         if 'population' in system['information']:
             if system['information']['population'] > min_pop:
-                d = {'traffic' : edsm.traffic(system['name'], cached = use_cache)['traffic']}
+                t = edsm.traffic(system_name = system['name'], cache = cache)
+                # TODO: include ship 'breakdown' data from response
+                d = {'traffic' : t['traffic']}
                 r['data'][system['name']] = d
     
     if dumps:
