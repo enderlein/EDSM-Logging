@@ -14,7 +14,6 @@ def traffic(system_name, cache = False):
     Queries EDSM to get traffic data for a single system
     """
     
-    # check if system traffic data is in cache already
     url = "https://www.edsm.net/api-system-v1/traffic"
     params = {'systemName' : system_name}
     

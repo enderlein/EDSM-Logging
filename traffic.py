@@ -3,6 +3,8 @@ import time
 
 import edsm
 
+# build class TrafficMonitor, add traffic_radius as method 
+
 # TODO: Add loading bar or something
 def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, cache = False):
     """

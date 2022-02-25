@@ -50,6 +50,9 @@ class Cache():
             f.write(json.dumps(d) + '\n')
 
 def cacheable(func):
+    # decorator for functions with cacheable responses
+    # as is, function being decorated must take 'cache' as
+    # a keyword argument
     def wrapper(*args, **kwargs):
         if 'cache' in kwargs:
             cache = kwargs['cache']
@@ -65,6 +68,7 @@ def cacheable(func):
 
         else:
             d = func(*args, **kwargs)
+            
             if not cache_search:
                 c.write(d, args, kwargs)
 
