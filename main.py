@@ -1,7 +1,6 @@
-import sqlite3
-
-import sqlite3_wrapper
 import traffic
+import edsm
 
 # gets traffic data for systems within sphere radius of given system, dumps to json file
-tr = traffic.traffic_radius(system_name = 'Alcor', radius = 20, min_pop = 20000, dumps = True, use_cache = False)
+tr = traffic.traffic_radius(system_name = 'Alcor', radius = 10, min_pop = 20000, cache = True)
+print(tr)
