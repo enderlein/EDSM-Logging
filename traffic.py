@@ -2,8 +2,37 @@ import json
 import time
 
 import edsm
+# build class TrafficMonitor, use Traffic model to build Traffic monotiring network 
+# TODO: TrafficSphere
+# TODO: Update on a schedule
+# TODO: Cross-reference hour-by-hour traffic data to track players.
 
-# build class TrafficMonitor, add traffic_radius as method 
+class Traffic():
+    def __init__(self, name):
+        self.name = name
+        self._traffic = None
+    
+    @property
+    def traffic(self):
+        if not self._traffic:
+            t = edsm.traffic(self.name)
+            d = {'traffic' : t['traffic'],
+                'breakdown' : t['breakdown'],
+                'timestamp' : int(time.time())}
+
+            self._traffic = d
+
+        return self._traffic
+
+    def update(self):
+        t = edsm.traffic(self.name)
+        d = {'traffic' : t['traffic'],
+            'breakdown' : t['breakdown'],
+            'timestamp' : int(time.time())}
+
+        self._traffic = d
+
+
 
 # TODO: Add loading bar or something
 def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, cache = False):
@@ -30,8 +59,8 @@ def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps 
         if 'population' in system['information']:
             if system['information']['population'] > min_pop:
                 t = edsm.traffic(system_name = system['name'], cache = cache)
-                # TODO: include ship 'breakdown' data from response
-                d = {'traffic' : t['traffic']}
+                d = {'traffic' : t['traffic'],
+                    'breakdown' : t['breakdown']} ### NOTE format
                 r['data'][system['name']] = d
     
     if dumps:
@@ -43,6 +72,5 @@ def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps 
             f.write(json.dumps(r) + '\n')
 
     return r
-
 
 
