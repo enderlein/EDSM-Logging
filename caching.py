@@ -20,9 +20,9 @@ class Cache():
     def search(self, args, kwargs):
         # searches for entry in cache that matches given args and kwargs
 
-        # popping 'cache' flag here because it's never stored
+        # 'cache' flag is never stored
         if 'cache' in kwargs:
-            kwargs.pop('cache')
+            del kwargs['cache']
 
         with open(self.path, 'r') as f:
             for line in f:
@@ -36,11 +36,11 @@ class Cache():
         # write an object to cache
         # TODO: make sure no error messages get written to cache (or
         # anything that isn't actual data)
-        # TODO: there is definitely a cleaner way to format the cache
+        # TODO: there is definitely a better way
 
-        # popping 'cache' flag because storing it messes with how search() works
+        # 'cache' flag should not be stored
         if 'cache' in kwargs:
-            kwargs.pop('cache')
+            del kwargs['cache']
 
         with open(self.path, 'a') as f:
             d = {'args' : args,
