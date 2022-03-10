@@ -51,7 +51,7 @@ class Cache():
 
 def cacheable(func):
     # decorator for functions with cacheable responses
-    # as is, function being decorated must take 'cache' as
+    # as is, function being decorated must take 'cache' (a bool) as
     # a keyword argument
     def wrapper(*args, **kwargs):
         if 'cache' in kwargs:
