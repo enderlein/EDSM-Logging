@@ -69,6 +69,27 @@ MODEL TrafficSphere
 """
 
 # TODO: add 'diff' method that detects changes in traffic data from last update
+class TrafficSphere():
+    def __init__(self, center, radius):
+        self.center = center
+        self.radius = radius
+        self.monitors = {}
+
+        self.populate()
+
+    def populate(self):
+        systems = edsm.systems_radius(system_name = self.center, radius = self.radius)
+        for system in systems:
+            monitor = TrafficMonitor(system['name'])
+            self.monitors[system['name']] = monitor
+
+    def update(self):
+        for monitor in self.monitors.values():
+            monitor.update()
+
+    def update_monitor(self, name):
+        self.monitors[name].update()
+
 
 class TrafficMonitor():
     def __init__(self, name):
