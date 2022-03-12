@@ -70,7 +70,7 @@ MODEL TrafficSphere
 
 # TODO: add 'diff' method that detects changes in traffic data from last update
 
-class Traffic():
+class TrafficMonitor():
     def __init__(self, name):
         self.name = name
         self._traffic = None
