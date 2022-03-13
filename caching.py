@@ -1,7 +1,7 @@
 import json
 import os
 
-# TODO: Deprecate
+# TODO: Remove
 class Cache():
     def __init__(self, tag):
         self.tag = tag 

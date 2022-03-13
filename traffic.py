@@ -42,9 +42,7 @@ class TrafficMonitor():
 
         self.traffic = d
 
-
-
-# TODO: Add loading bar or something
+# TODO: Remove
 def traffic_radius(*, system_name, radius, min_pop = -1, filename = None, dumps = False, cache = False):
     """
     system_name* (string) - name of system at center of search sphere.
