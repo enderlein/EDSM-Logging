@@ -1,9 +1,8 @@
 import json
 import time
-
+import asyncio
 import edsm
-# build class TrafficMonitor, use Traffic model to build Traffic monotiring network 
-# TODO: TrafficSphere
+
 # TODO: Update on a schedule
 # TODO: Cross-reference hour-by-hour traffic data to track players.
 
@@ -22,38 +21,26 @@ class TrafficSphere():
             monitor = TrafficMonitor(system['name'])
             self.monitors[system['name']] = monitor
 
-    def update(self):
-        for monitor in self.monitors.values():
-            monitor.update()
+    async def update(self):
+        await asyncio.gather(*[monitor.update() for monitor in self.monitors.values()])
 
     def update_monitor(self, name):
-        self.monitors[name].update()
+        #self.monitors[name].update()
+        pass
 
 
 class TrafficMonitor():
     def __init__(self, name):
         self.name = name
-        self._traffic = None
-    
-    @property
-    def traffic(self):
-        if not self._traffic:
-            t = edsm.traffic(self.name)
-            d = {'traffic' : t['traffic'],
-                'breakdown' : t['breakdown'],
-                'timestamp' : int(time.time())}
+        self.traffic = None
 
-            self._traffic = d
-
-        return self._traffic
-
-    def update(self):
-        t = edsm.traffic(self.name)
+    async def update(self):
+        t = await edsm.traffic(self.name)
         d = {'traffic' : t['traffic'],
             'breakdown' : t['breakdown'],
             'timestamp' : int(time.time())}
 
-        self._traffic = d
+        self.traffic = d
 
 
 
