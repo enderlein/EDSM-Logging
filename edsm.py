@@ -1,10 +1,8 @@
 import requests
 import json
+import aiohttp
 
-import caching
-
-@caching.cacheable
-def traffic(system_name, cache = False):
+async def traffic(system_name, cache = False):
     """
     system_name* (string) - name of system 
     cache (bool) - whether or not to use cached data (data in cache may be outdated)
@@ -17,12 +15,12 @@ def traffic(system_name, cache = False):
     url = "https://www.edsm.net/api-system-v1/traffic"
     params = {'systemName' : system_name}
     
-    r = requests.get(url, params = params)
-    d = json.loads(r.text)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params = params) as r:
+            return await r.json()
 
-    return d
 
-@caching.cacheable
+#@caching.cacheable
 def systems_radius(system_name, radius, cache = False):
     """
     system_name* (string) - name of system at the center of the radius
