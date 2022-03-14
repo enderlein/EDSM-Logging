@@ -10,6 +10,7 @@ import edsm
 # TODO: Update on a schedule
 # TODO: Cross-reference hour-by-hour traffic data to track players.
 
+# TODO: Write tests
 # TODO: add 'diff' method that detects changes in traffic data from last update
 class TrafficSphere():
     def __init__(self, center, radius):
@@ -32,6 +33,9 @@ class TrafficSphere():
 
     def update_monitor(self, name):
         self.monitors[name].update()
+
+    def get_monitor(self, name):
+        return self.monitors[name]
 
 
 class TrafficMonitor():
