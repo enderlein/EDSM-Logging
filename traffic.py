@@ -42,10 +42,11 @@ class TrafficMonitor():
     def __init__(self, name):
         self.name = name
         self._traffic = None
-
+    
     def fetch_traffic(self):
         t = edsm.traffic(self.name)
-        d = {'traffic' : t['traffic'],
+        d = {'system_name' : t['name'],
+            'traffic' : t['traffic'],
             'breakdown' : t['breakdown'],
             'timestamp' : int(time.time())}
 
