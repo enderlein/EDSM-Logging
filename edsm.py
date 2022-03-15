@@ -21,7 +21,11 @@ def traffic(system_name):
 
     d = json.loads(r.text)
 
-    return d
+    if d:
+        return d
+
+    else: 
+        raise Exception(f"Empty object returned for edsm.traffic('{system_name}')")
 
 
 
@@ -46,4 +50,8 @@ def systems_radius(system_name, radius):
 
     d = json.loads(r.text)
 
-    return d
+    if d:
+        return d
+
+    else: 
+        raise Exception(f"Empty object returned for edsm.systems_radius('{system_name}', {radius})")
