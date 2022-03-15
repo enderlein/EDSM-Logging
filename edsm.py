@@ -14,7 +14,11 @@ def traffic(system_name):
     url = "https://www.edsm.net/api-system-v1/traffic"
     params = {'systemName' : system_name}
     
-    r = requests.get(url, params = params)
+    try:
+        r = requests.get(url, params = params)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+
     d = json.loads(r.text)
 
     return d
@@ -35,7 +39,11 @@ def systems_radius(system_name, radius):
     url = "https://www.edsm.net/api-v1/sphere-systems"
     params = {'systemName' : system_name, 'radius' : radius, 'showInformation' : 1}
 
-    r = requests.get(url, params = params)
+    try:
+        r = requests.get(url, params = params)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+
     d = json.loads(r.text)
 
     return d
