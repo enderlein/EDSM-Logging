@@ -1,4 +1,5 @@
 import json
+import warnings
 import time
 
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +12,7 @@ import edsm
 # TODO: Cross-reference hour-by-hour traffic data to track players.
 
 # TODO: Write tests
-# TODO: add 'diff' method that detects changes in traffic data from last update
+
 class TrafficSphere():
     def __init__(self, center, radius):
         self.center = center
@@ -42,13 +43,39 @@ class TrafficMonitor():
     def __init__(self, name):
         self.name = name
         self._traffic = None
-    
+        self._last = None
+
+    @property
+    def diff(self):
+        if self._last == None:
+            warnings.warn("'diff' defaulting to None: Nothing to compare to!")
+            return None
+
+        elif self._last != None:
+            diff_traffic = {k : self._traffic['traffic'][k] - self._last['traffic'][k] for k in self._traffic['traffic']}
+            
+            diff_breakdown = {}
+            for ship in self._traffic['breakdown']:
+                if ship in self._last['breakdown']:
+                    diff_breakdown[ship] = self._traffic['breakdown'][ship] - self._last['breakdown'][ship]
+                else:
+                    diff_breakdown[ship] = self._traffic['breakdown'][ship]
+
+            diff_timestamp = self._traffic['timestamp'] - self._last['timestamp']
+
+            d = {'system_name' : self.name,
+                    'traffic' : diff_traffic,
+                    'breakdown' : diff_breakdown,
+                    'timestamp' : diff_timestamp}
+
+            return d
+
     def fetch_traffic(self):
         t = edsm.traffic(self.name)
         d = {'system_name' : t['name'],
-            'traffic' : t['traffic'],
-            'breakdown' : t['breakdown'],
-            'timestamp' : int(time.time())}
+                'traffic' : t['traffic'],
+                'breakdown' : t['breakdown'],
+                'timestamp' : int(time.time())}
 
         return d
 
@@ -60,4 +87,5 @@ class TrafficMonitor():
         return self._traffic
 
     def update(self):
+        self._last = self._traffic
         self._traffic = self.fetch_traffic()
