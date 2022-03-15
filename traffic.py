@@ -6,6 +6,21 @@ import edsm
 
 # TODO: Write tests
 
+"""
+class TrafficNetwork():
+    def __init__(self, *systems):
+        self._monitors = {}
+
+        self.init_monitors(systems)
+
+    def init_monitors(self, systems):
+        monitors = []
+        for name in systems:
+            m = edsm.traffic(name)
+            monitors.append(m)
+
+        return monitors
+"""
 class TrafficSphere():
     def __init__(self, center, radius):
         self.center = center
@@ -20,16 +35,20 @@ class TrafficSphere():
             monitor = TrafficMonitor(system['name'])
             self.monitors[system['name']] = monitor
 
-    def update(self):
+    def update_monitors(self):
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
             for monitor in self.monitors.values():
                 executor.submit(monitor.update)
-
-    def update_monitor(self, name):
-        self.monitors[name].update()
+    
+    def add_monitor(self, name):
+        monitor = TrafficMonitor(name)
+        self.monitors[monitor.name] = monitor
 
     def get_monitor(self, name):
         return self.monitors[name]
+
+    def update_monitor(self, name):
+        self.monitors[name].update()
 
 
 class TrafficMonitor():
