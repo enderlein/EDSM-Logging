@@ -5,23 +5,66 @@ import config
 import edsm
 
 # TODO: Write tests
-
+# TODO: add Link model to join multiple system updates together
 
 class TrafficNetwork():
-    def __init__(self, *systems):
+    '''
+    TrafficNetwork.monitors ( dict{str : TrafficMonitor} ) - A dict of TrafficMonitor objects with
+    associated system names as keys.
+    '''
+    def __init__(self, *system_names):
         self.monitors = {}
-        self.init_monitors(systems)
+        self.init_monitors(system_names)
         
-    def init_monitors(self, systems):
-        monitors = []
-        for name in systems:
-            m = edsm.traffic(name)
-            monitors.append(m)
+    def init_monitors(self, system_names):
+        '''
+        Populate self.monitors with TrafficMonitor objects using given 
+        system names (uses multithreading)
+        
+        settings:
+            config.MAX_THREADS
+        '''
+        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
+            for name in system_names:
+                executor.submit(self.add_monitor, name)
 
-        return monitors
+    def update_monitors(self):
+        '''
+        Update all monitors in self.monitors (uses multithreading)
+        settings:
+            config.MAX_THREADS 
+        '''
+        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
+            for monitor in self.monitors.values():
+                executor.submit(monitor.update)
+
+    def add_monitor(self, name: str) -> None:
+        '''
+        name* (str) - name of star system to associate with TrafficMonitor object
+        
+        Adds monitor for system with given name to self.monitors
+        '''
+        monitor = TrafficMonitor(name)
+        self.monitors[monitor.name] = monitor
+
+    def get_monitor(self, name: str) -> 'TrafficMonitor':
+        '''
+        name* (str) - name of star system associated with TrafficMonitor object
+
+        Returns TrafficMonitor object in self.monitors with given name
+        '''
+        return self.monitors[name]
+
+    def update_monitor(self, name: str) -> None:
+        '''
+        name* (str) - name of star system associated with TrafficMonitor object
+
+        Updates TrafficMonitor object in self.monitors with given name
+        '''
+        self.monitors[name].update()
 
 
-class TrafficSphere():
+class TrafficSphere(TrafficNetwork):
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
@@ -31,28 +74,17 @@ class TrafficSphere():
 
     def init_monitors(self):
         systems = edsm.systems_radius(system_name = self.center, radius = self.radius)
-        for system in systems:
-            monitor = TrafficMonitor(system['name'])
-            self.monitors[system['name']] = monitor
+        names = [system['name'] for system in systems]
 
-    def update_monitors(self):
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
-            for monitor in self.monitors.values():
-                executor.submit(monitor.update)
-    
-    def add_monitor(self, name):
-        monitor = TrafficMonitor(name)
-        self.monitors[monitor.name] = monitor
+            for name in names:
+                executor.submit(self.add_monitor, name)
 
-    def get_monitor(self, name):
-        return self.monitors[name]
-
-    def update_monitor(self, name):
-        self.monitors[name].update()
 
 
 class TrafficMonitor():
-    def __init__(self, query):
+    def __init__(self, name):
+        self._query = name
         self._traffic = None
         self._last = None
 
@@ -65,7 +97,7 @@ class TrafficMonitor():
         if self._traffic == None or self._last == None:
             return None
 
-        elif self._last != None:
+        else:
             diff_traffic = {k : self._traffic['traffic'][k] - self._last['traffic'][k] for k in self._traffic['traffic']}
             
             diff_breakdown = {}
@@ -92,7 +124,7 @@ class TrafficMonitor():
         return self._traffic
 
     def fetch_traffic(self):
-        t = edsm.traffic(self.name)
+        t = edsm.traffic(self._query)
         d = {'system_name' : t['name'],
                 'traffic' : t['traffic'],
                 'breakdown' : t['breakdown'],
