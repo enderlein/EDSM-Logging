@@ -6,13 +6,12 @@ import edsm
 
 # TODO: Write tests
 
-"""
+
 class TrafficNetwork():
     def __init__(self, *systems):
-        self._monitors = {}
-
+        self.monitors = {}
         self.init_monitors(systems)
-
+        
     def init_monitors(self, systems):
         monitors = []
         for name in systems:
@@ -20,7 +19,8 @@ class TrafficNetwork():
             monitors.append(m)
 
         return monitors
-"""
+
+
 class TrafficSphere():
     def __init__(self, center, radius):
         self.center = center
@@ -52,10 +52,13 @@ class TrafficSphere():
 
 
 class TrafficMonitor():
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, query):
         self._traffic = None
         self._last = None
+
+        self.update()
+
+        self.name = self.traffic['system_name']
 
     @property
     def diff(self):
