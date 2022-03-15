@@ -37,6 +37,7 @@ def detect_traffic_update(system_name):
         # check diff property
         if tm.diff != None:
             if tm.diff['traffic']['day'] > 0:
+                # instead of printing, you could return a value to a watchdog somewhere
                 print(f"Update detected: {tm.diff['traffic']['day']} new ships\n" + 
                               f"Location: {tm.diff['name']}\n" + 
                               f"since last update (approx. {tm.diff['timestamp']} seconds ago)")
