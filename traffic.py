@@ -9,16 +9,18 @@ import edsm
 
 class TrafficNetwork():
     '''
-    TrafficNetwork.monitors ( dict{str : TrafficMonitor} ) - A dict of TrafficMonitor objects with
-    associated system names as keys.
+    <TrafficNetwork>.monitors ( dict{str : <TrafficMonitor>} ) - A dict of <TrafficMonitor> objects with
+    associated system names as keys. add_monitor, get_monitor, and update_monitor methods will act on this dict
     '''
     def __init__(self, *system_names):
         self.monitors = {}
-        self.init_monitors(system_names)
+        self.init_monitors(list(system_names))
         
-    def init_monitors(self, system_names):
+    def init_monitors(self, system_names: list) -> None:
         '''
-        Populate self.monitors with TrafficMonitor objects using given 
+        system_names* (list[str]) - list of system names to create <TrafficMonitor> objects for
+
+        Add multiple <TrafficMonitor> objects to self.monitors using given 
         system names (uses multithreading)
         
         settings:
@@ -40,7 +42,7 @@ class TrafficNetwork():
 
     def add_monitor(self, name: str) -> None:
         '''
-        name* (str) - name of star system to associate with TrafficMonitor object
+        name* (str) - name of star system to associate with <TrafficMonitor> object
         
         Adds monitor for system with given name to self.monitors
         '''
@@ -49,9 +51,9 @@ class TrafficNetwork():
 
     def get_monitor(self, name: str) -> 'TrafficMonitor':
         '''
-        name* (str) - name of star system associated with TrafficMonitor object
+        name* (str) - name of star system associated with <TrafficMonitor> object
 
-        Returns TrafficMonitor object in self.monitors with given name
+        returns <TrafficMonitor> object in self.monitors with given name
         '''
         return self.monitors[name]
 
@@ -59,7 +61,7 @@ class TrafficNetwork():
         '''
         name* (str) - name of star system associated with TrafficMonitor object
 
-        Updates TrafficMonitor object in self.monitors with given name
+        Updates <TrafficMonitor> object in self.monitors with given name
         '''
         self.monitors[name].update()
 
