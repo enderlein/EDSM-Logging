@@ -1,16 +1,8 @@
-import json
-import warnings
 import time
-
 from concurrent.futures import ThreadPoolExecutor
 
 import config
 import edsm
-
-# build class TrafficMonitor, use Traffic model to build Traffic monotiring network 
-# TODO: TrafficSphere
-# TODO: Update on a schedule
-# TODO: Cross-reference hour-by-hour traffic data to track players.
 
 # TODO: Write tests
 
@@ -48,8 +40,7 @@ class TrafficMonitor():
 
     @property
     def diff(self):
-        if self._last == None:
-            warnings.warn("'diff' defaulting to None: Nothing to compare to!")
+        if self._traffic == None or self._last == None:
             return None
 
         elif self._last != None:
@@ -71,6 +62,13 @@ class TrafficMonitor():
 
             return d
 
+    @property
+    def traffic(self):
+        if not self._traffic:
+            self._traffic = self.fetch_traffic()
+
+        return self._traffic
+
     def fetch_traffic(self):
         t = edsm.traffic(self.name)
         d = {'system_name' : t['name'],
@@ -79,13 +77,6 @@ class TrafficMonitor():
                 'timestamp' : int(time.time())}
 
         return d
-
-    @property
-    def traffic(self):
-        if not self._traffic:
-            self._traffic = self.fetch_traffic()
-
-        return self._traffic
 
     def update(self):
         self._last = self._traffic
