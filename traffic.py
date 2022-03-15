@@ -4,6 +4,7 @@ import time
 
 from concurrent.futures import ThreadPoolExecutor
 
+import config
 import edsm
 
 # build class TrafficMonitor, use Traffic model to build Traffic monotiring network 
@@ -28,7 +29,7 @@ class TrafficSphere():
             self.monitors[system['name']] = monitor
 
     def update(self):
-        with ThreadPoolExecutor(max_workers=20) as executor:
+        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
             for monitor in self.monitors.values():
                 executor.submit(monitor.update)
 
