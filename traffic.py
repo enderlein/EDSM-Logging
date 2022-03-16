@@ -30,7 +30,7 @@ class TrafficNetwork():
             for name in system_names:
                 executor.submit(self.add_monitor, name)
 
-    def update_monitors(self):
+    def update_monitors(self) -> None:
         '''
         Update all monitors in self.monitors (uses multithreading)
         settings:
