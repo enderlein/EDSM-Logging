@@ -18,19 +18,10 @@ class TrafficTest(unittest.TestCase):
         self.assertEqual('J. Calvert (Joshua)', json['discovery']['commander'])
         self.assertEqual('2014-11-18 18:21:43', json['discovery']['date'])
 
-        self.assertIn('traffic', json)
         self.assertIs(type(json['traffic']), dict)
-
-        self.assertIn('total', json['traffic'])
         self.assertIs(type(json['traffic']['total']), int)
-
-        self.assertIn('week', json['traffic'])
         self.assertIs(type(json['traffic']['week']), int)
-
-        self.assertIn('day', json['traffic'])
         self.assertIs(type(json['traffic']['day']), int)
-
-        self.assertIn('breakdown', json)
         self.assertIs(type(json['breakdown']), dict)
         
     def test_traffic_Warkawa(self):
@@ -44,19 +35,10 @@ class TrafficTest(unittest.TestCase):
         self.assertEqual('sutex', json['discovery']['commander'])
         self.assertEqual('2015-01-05 11:13:31', json['discovery']['date'])
 
-        self.assertIn('traffic', json)
         self.assertIs(type(json['traffic']), dict)
-
-        self.assertIn('total', json['traffic'])
         self.assertIs(type(json['traffic']['total']), int)
-
-        self.assertIn('week', json['traffic'])
         self.assertIs(type(json['traffic']['week']), int)
-
-        self.assertIn('day', json['traffic'])
         self.assertIs(type(json['traffic']['day']), int)
-
-        self.assertIn('breakdown', json)
         self.assertIs(type(json['breakdown']), dict)
 
     def test_traffic_warkawa_lowercase(self):
@@ -70,17 +52,22 @@ class TrafficTest(unittest.TestCase):
         self.assertEqual('sutex', json['discovery']['commander'])
         self.assertEqual('2015-01-05 11:13:31', json['discovery']['date'])
 
-        self.assertIn('traffic', json)
         self.assertIs(type(json['traffic']), dict)
-
-        self.assertIn('total', json['traffic'])
         self.assertIs(type(json['traffic']['total']), int)
-
-        self.assertIn('week', json['traffic'])
         self.assertIs(type(json['traffic']['week']), int)
-
-        self.assertIn('day', json['traffic'])
         self.assertIs(type(json['traffic']['day']), int)
-
-        self.assertIn('breakdown', json)
         self.assertIs(type(json['breakdown']), dict)
+
+
+class SystemsRadiusTest(unittest.TestCase):
+    def test_bad_name_Wawawa(self):
+        self.assertRaises(Exception, systems_radius, 'Wawawa')
+
+    def test_systems_radius_Warkawa_8(self):
+        json = systems_radius('Warkawa', 8)
+
+        distance_by_name = {system['name'] : system['distance'] for system in json}
+        self.assertEqual(distance_by_name['Warkawa'], 0)
+        self.assertEqual(distance_by_name['Aulendiae'], 6.89)
+
+        self.assertNotIn('Sol', json)
