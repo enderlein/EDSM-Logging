@@ -4,7 +4,6 @@ import json
 def traffic(system_name):
     """
     system_name* (string) - name of system 
-    cache (bool) - whether or not to use cached data (data in cache may be outdated)
 
     returns (dict)
 
@@ -33,7 +32,6 @@ def systems_radius(system_name, radius):
     """
     system_name* (string) - name of system at the center of the radius
     radius* (int) - radius of search sphere (in lightyears)
-    cache (bool) - whether or not to use cached data (data in cache may be outdated)
 
     returns (dict)
 
