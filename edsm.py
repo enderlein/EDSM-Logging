@@ -24,8 +24,8 @@ def traffic(system_name):
     if d:
         return d
 
-    else: 
-        raise Exception(f"Empty object returned for edsm.traffic('{system_name}')")
+    elif d == {}: 
+        raise Exception(f"Received empty object in edsm.traffic('{system_name}')")
 
 
 
@@ -53,5 +53,5 @@ def systems_radius(system_name, radius):
     if d:
         return d
 
-    else: 
-        raise Exception(f"Empty object returned for edsm.systems_radius('{system_name}', {radius})")
+    elif d == {}: 
+        raise Exception(f"Received empty object in edsm.traffic('{system_name}', {radius})")
