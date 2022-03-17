@@ -5,7 +5,7 @@ import config
 import edsm
 
 # TODO: Write tests
-# TODO: Add self.update_queue to TrafficNetworks
+# TODO: Add update queue feature to TrafficNetworks
 
 class TrafficNetwork():
     def __init__(self, *system_names):
@@ -70,24 +70,14 @@ class TrafficSphere(TrafficNetwork):
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
-        self.monitors = {}
 
-        self.init_monitors()
+        super().__init__(*self.fetch_systems_radius(self.center, self.radius))
 
-    def init_monitors(self):
-        '''
-        Add multiple <TrafficMonitor> objects to self.monitors using given 
-        system names (uses multithreading)
-        
-        settings:
-            config.MAX_THREADS
-        '''
-        systems = edsm.systems_radius(system_name = self.center, radius = self.radius)
+    def fetch_systems_radius(self, center, radius):
+        systems = edsm.systems_radius(system_name = center, radius = radius)
         names = [system['name'] for system in systems]
 
-        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
-            for name in names:
-                executor.submit(self.add_monitor, name)
+        return names
 
 
 class TrafficMonitor():
