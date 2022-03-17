@@ -5,14 +5,14 @@ import config
 import edsm
 
 # TODO: Write tests
-# TODO: add Link model to join multiple system updates together
+# TODO: Add self.update_queue to TrafficNetworks
 
 class TrafficNetwork():
-    '''
-    <TrafficNetwork>.monitors ( dict{str : <TrafficMonitor>} ) - A dict of <TrafficMonitor> objects with
-    associated system names as keys. add_monitor, get_monitor, and update_monitor methods will act on this dict
-    '''
     def __init__(self, *system_names):
+        '''
+        <self>.monitors (dict) - stores <TrafficMonitor> objects in format {<TrafficMonitor>.name : <TrafficMonitor>}. 
+                                    add_monitor, get_monitor, and update_monitor methods will act on this dict
+        '''
         self.monitors = {}
         self.init_monitors(list(system_names))
         
@@ -75,6 +75,13 @@ class TrafficSphere(TrafficNetwork):
         self.init_monitors()
 
     def init_monitors(self):
+        '''
+        Add multiple <TrafficMonitor> objects to self.monitors using given 
+        system names (uses multithreading)
+        
+        settings:
+            config.MAX_THREADS
+        '''
         systems = edsm.systems_radius(system_name = self.center, radius = self.radius)
         names = [system['name'] for system in systems]
 
@@ -83,16 +90,14 @@ class TrafficSphere(TrafficNetwork):
                 executor.submit(self.add_monitor, name)
 
 
-
 class TrafficMonitor():
     def __init__(self, name):
         self._query = name
         self._traffic = None
         self._last = None
+        self.name = None
 
         self.update()
-
-        self.name = self.traffic['system_name']
 
     @property
     def diff(self):
@@ -126,7 +131,7 @@ class TrafficMonitor():
         return self._traffic
 
     def fetch_traffic(self):
-        t = edsm.traffic(self._query)
+        t = edsm.traffic(self._query if not self.name else self.name)
         d = {'system_name' : t['name'],
                 'traffic' : t['traffic'],
                 'breakdown' : t['breakdown'],
@@ -137,3 +142,6 @@ class TrafficMonitor():
     def update(self):
         self._last = self._traffic
         self._traffic = self.fetch_traffic()
+
+        if not self.name:
+            self.name = self._traffic['system_name']
