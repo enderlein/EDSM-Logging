@@ -121,7 +121,7 @@ class TrafficMonitor():
         return self._traffic
 
     def fetch_traffic(self):
-        t = edsm.traffic(self._query if not self.name else self.name)
+        t = edsm.traffic(self.name if self.name else self._query)
         d = {'system_name' : t['name'],
                 'traffic' : t['traffic'],
                 'breakdown' : t['breakdown'],
