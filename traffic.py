@@ -13,14 +13,18 @@ class TrafficNetwork():
         <self>.monitors (dict) - stores <TrafficMonitor> objects in format {<TrafficMonitor>.name : <TrafficMonitor>}. 
                                     add_monitor, get_monitor, and update_monitor methods will act on this dict
         '''
-        self.monitors = {}
+        self._monitors = {}
         self.init_monitors(list(system_names))
+
+    @property
+    def monitors(self):
+        return self._monitors.values()
         
     def init_monitors(self, system_names: list) -> None:
         '''
         system_names* (list[str]) - list of system names to create <TrafficMonitor> objects for
 
-        Add multiple <TrafficMonitor> objects to self.monitors using given 
+        Add multiple <TrafficMonitor> objects to self._monitors using given 
         system names (uses multithreading)
         
         settings:
@@ -30,40 +34,40 @@ class TrafficNetwork():
             for name in system_names:
                 executor.submit(self.add_monitor, name)
 
-    def update_monitors(self) -> None:
+    def update_all(self) -> None:
         '''
-        Update all monitors in self.monitors (uses multithreading)
+        Update all monitors in self._monitors (uses multithreading)
         settings:
             config.MAX_THREADS 
         '''
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
-            for monitor in self.monitors.values():
+            for monitor in self._monitors.values():
                 executor.submit(monitor.update)
 
     def add_monitor(self, name: str) -> None:
         '''
         name* (str) - name of star system to associate with <TrafficMonitor> object
         
-        Adds monitor for system with given name to self.monitors
+        Adds monitor for system with given name to self._monitors
         '''
         monitor = TrafficMonitor(name)
-        self.monitors[monitor.name] = monitor
+        self._monitors[monitor.name] = monitor
 
     def get_monitor(self, name: str) -> 'TrafficMonitor':
         '''
         name* (str) - name of star system associated with <TrafficMonitor> object
 
-        returns <TrafficMonitor> object in self.monitors with given name
+        returns <TrafficMonitor> object in self._monitors with given name
         '''
-        return self.monitors[name]
+        return self._monitors[name]
 
     def update_monitor(self, name: str) -> None:
         '''
         name* (str) - name of star system associated with TrafficMonitor object
 
-        Updates <TrafficMonitor> object in self.monitors with given name
+        Updates <TrafficMonitor> object in self._monitors with given name
         '''
-        self.monitors[name].update()
+        self._monitors[name].update()
 
 
 class TrafficSphere(TrafficNetwork):
