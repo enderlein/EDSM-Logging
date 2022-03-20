@@ -1,55 +1,77 @@
 import requests
 import json
 
-def traffic(system_name):
-    """
-    system_name* (string) - name of system 
+class System():
+    def traffic(systemName):
+        """
+        systemName* (string) - name of system 
 
-    returns (dict)
+        returns (dict)
 
-    Queries EDSM to get traffic data for a single system
-    """
-    
-    url = "https://www.edsm.net/api-system-v1/traffic"
-    params = {'systemName' : system_name}
-    
-    try:
-        r = requests.get(url, params = params)
-    except requests.exceptions.RequestException as e:
-        raise SystemExit(e)
+        Queries EDSM to get traffic data for a single system
+        """
+        
+        url = "https://www.edsm.net/api-system-v1/traffic"
+        params = {'systemName' : systemName}
+        
+        try:
+            r = requests.get(url, params = params)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
 
-    d = json.loads(r.text)
+        d = json.loads(r.text)
 
-    if d:
-        return d
+        if d:
+            return d
 
-    elif d == {}: 
-        raise Exception(f"Received empty object in edsm.traffic('{system_name}')")
+        elif d == {}: 
+            raise Exception(f"Received empty object in edsm.traffic('{systemName}')")
+
+    def stations(systemName):
+        """
+        systemName* (string) - name of system
+
+        returns (dict)
+
+        Queries EDSM to get information on stations in a given system
+        """
+
+        url = "https://www.edsm.net/api-system-v1/stations"
+        params = {'systemName' : systemName}
 
 
+class Systems():
+    def systems_radius(systemName, radius, showId = 0, 
+        showCoordinates = 0, showPermit = 0, showInformation = 0, 
+        showPrimaryStar = 0, includeHidden = 0):
+        """
+        systemName* (string) - name of system at the center of the radius
+        radius* (int) - radius of search sphere (in lightyears)
 
-def systems_radius(system_name, radius):
-    """
-    system_name* (string) - name of system at the center of the radius
-    radius* (int) - radius of search sphere (in lightyears)
+        returns (dict)
 
-    returns (dict)
+        Queries EDSM to get information on systems within a sphere radius of given system
+        """
 
-    Queries EDSM to get information on systems within a sphere radius of given system
-    """
+        url = "https://www.edsm.net/api-v1/sphere-systems"
+        params = {'systemName' : systemName, 
+        'radius' : radius, 
+        'showId' : showId,
+        'showCoordinates' : showCoordinates,
+        'showPermit' : showPermit,
+        'showInformation' : showInformation,
+        'showPrimaryStar' : showPrimaryStar,
+        'includeHidden' : includeHidden}
 
-    url = "https://www.edsm.net/api-v1/sphere-systems"
-    params = {'systemName' : system_name, 'radius' : radius, 'showInformation' : 1}
+        try:
+            r = requests.get(url, params = params)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
 
-    try:
-        r = requests.get(url, params = params)
-    except requests.exceptions.RequestException as e:
-        raise SystemExit(e)
+        d = json.loads(r.text)
 
-    d = json.loads(r.text)
+        if d:
+            return d
 
-    if d:
-        return d
-
-    elif d == {}: 
-        raise Exception(f"Received empty object in edsm.traffic('{system_name}', {radius})")
+        elif d == {}: 
+            raise Exception(f"Received empty object in edsm.traffic('{systemName}', {radius})")
