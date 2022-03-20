@@ -6,12 +6,14 @@ import edsm
 
 # TODO: Write tests
 # TODO: Add update queue feature to TrafficNetworks
+# TODO: generalize, make new file called models.py, create System model that will contain
+# a TrafficMonitor and other _Monitor objects (market, factions for now)
 
 class TrafficNetwork():
     def __init__(self, *system_names):
         '''
         <self>.monitors (dict) - stores <TrafficMonitor> objects in format {<TrafficMonitor>.name : <TrafficMonitor>}. 
-                                    add_monitor, get_monitor, and update_monitor methods will act on this dict
+                                    init_monitors, update_all, add_monitor, get_monitor, and update_monitor methods will act on this dict
         '''
         self._monitors = {}
         self.init_monitors(list(system_names))
@@ -78,7 +80,7 @@ class TrafficSphere(TrafficNetwork):
         super().__init__(*self.fetch_systems_radius(self.center, self.radius))
 
     def fetch_systems_radius(self, center, radius):
-        systems = edsm.systems_radius(system_name = center, radius = radius)
+        systems = edsm.Systems.systems_radius(systemName = center, radius = radius)
         names = [system['name'] for system in systems]
 
         return names
@@ -125,7 +127,7 @@ class TrafficMonitor():
         return self._traffic
 
     def fetch_traffic(self):
-        t = edsm.traffic(self.name if self.name else self._query)
+        t = edsm.System.traffic(self.name if self.name else self._query)
         d = {'system_name' : t['name'],
                 'traffic' : t['traffic'],
                 'breakdown' : t['breakdown'],
