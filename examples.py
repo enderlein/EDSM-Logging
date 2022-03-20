@@ -2,31 +2,9 @@ import traffic
 import time
 import json
 
-# Turns out traffic API only updates once per commander per ship.
-# Can't track players in real time, but old traffic data might show popular routes??
-# Then again, its easy to opt out of being tracked, and anyone who would want to would, so
-# I'd really only be tracking players who wanted to be tracked
-# What to doooooooooooo
-
 def append_file(file, data):
     with open(file, 'a') as f:
         f.write(data + '\n')
-
-def log_traffic_sphere(center, radius, sleep):
-    ts = traffic.TrafficSphere('Warkawa')
-
-    while True:
-        ts.update()
-
-        for tm in ts:
-            s = json.dumps(tm.traffic)
-            
-            filename = f"traffic_sphere_centered@{tm.traffic['system_name']}"
-            append_file(filename, s)
-
-        current_time = time.strftime("%H:%M:%S", time.localtime())
-        print(f"Sleeping: {sleep} seconds... (since {current_time})")
-        time.sleep(sleep)
 
 def log_traffic(system_name, sleep):
     # create TrafficMonitor object for given star system
