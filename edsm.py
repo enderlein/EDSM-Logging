@@ -52,13 +52,13 @@ class System():
 
         return query(self.url_base + endpoint, params)
 
-# TODO: refactor to use 'query function'
 #TODO: write tests
 #
 class Systems():
     url_base = "https://www.edsm.net/api-v1/"
 
-    def sphere_systems(systemName, radius, showId = 0, 
+    @classmethod
+    def sphere_systems(self, systemName, radius, showId = 0, 
         showCoordinates = 0, showPermit = 0, showInformation = 0, 
         showPrimaryStar = 0, includeHidden = 0):
         """
@@ -70,7 +70,7 @@ class Systems():
         Queries EDSM to get information on systems within a sphere radius of given system
         """
 
-        url = "sphere-systems"
+        endpoint = "sphere-systems"
         params = {'systemName' : systemName, 
         'radius' : radius, 
         'showId' : showId,
@@ -80,15 +80,4 @@ class Systems():
         'showPrimaryStar' : showPrimaryStar,
         'includeHidden' : includeHidden}
 
-        try:
-            r = requests.get(url, params = params)
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
-
-        d = json.loads(r.text)
-
-        if d:
-            return d
-
-        elif d == {}: 
-            raise Exception(f"Received empty object in edsm.traffic('{systemName}', {radius})")
+        return query(self.url_base + endpoint, params)
