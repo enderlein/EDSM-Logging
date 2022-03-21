@@ -1,8 +1,143 @@
 import unittest
 
-from edsm import traffic
-from edsm import systems_radius
+from edsm import System
+from edsm import Systems
 
+class SystemTest(unittest.TestCase):
+    def test_traffic_Wawawa(self):
+        # as of writing this, there are no systems in the game named 'Wawawa', 
+        # so System.traffic should return an empty obj
+        self.assertRaises(Exception, System.traffic, 'Wawawa')
+        
+    def test_traffic_Sol(self):
+        d = System.traffic('Sol')
+
+        self.assertIs(type(d), dict)
+
+        self.assertEqual(27, d['id'])
+        self.assertEqual(10477373803, d['id64'])
+        self.assertEqual('Sol', d['name'])
+        self.assertEqual('https://www.edsm.net/en/system/id/27/name/Sol', d['url'])
+
+        self.assertEqual('J. Calvert (Joshua)', d['discovery']['commander'])
+        self.assertEqual('2014-11-18 18:21:43', d['discovery']['date'])
+
+        self.assertIs(type(d['traffic']), dict)
+        self.assertIs(type(d['traffic']['total']), int)
+        self.assertIs(type(d['traffic']['week']), int)
+        self.assertIs(type(d['traffic']['day']), int)
+        self.assertIs(type(d['breakdown']), dict)
+
+    def test_traffic_sol_lowercase(self):
+        d = System.traffic('sol')
+
+        self.assertIs(type(d), dict)
+
+        self.assertEqual(27, d['id'])
+        self.assertEqual(10477373803, d['id64'])
+        self.assertEqual('Sol', d['name'])
+        self.assertEqual('https://www.edsm.net/en/system/id/27/name/Sol', d['url'])
+
+        self.assertEqual('J. Calvert (Joshua)', d['discovery']['commander'])
+        self.assertEqual('2014-11-18 18:21:43', d['discovery']['date'])
+
+        self.assertIs(type(d['traffic']), dict)
+        self.assertIs(type(d['traffic']['total']), int)
+        self.assertIs(type(d['traffic']['week']), int)
+        self.assertIs(type(d['traffic']['day']), int)
+        self.assertIs(type(d['breakdown']), dict)
+
+    def test_stations_Sol(self):
+        d = System.stations('Sol')
+
+        self.assertIs(type(d), dict)
+
+        self.assertEqual(27, d['id'])
+        self.assertEqual(10477373803, d['id64'])
+        self.assertEqual('Sol', d['name'])
+        self.assertEqual('https://www.edsm.net/en/system/stations/id/27/name/Sol', d['url'])
+
+        self.assertIs(type(d['stations']), list)
+
+        # asserts assuming there are more than 0 stations in the system (there are, as of writing).
+        station = d['stations'][0]
+        self.assertIn('id', station)
+        self.assertIn('marketId', station)
+        self.assertIn('type', station)
+        self.assertIn('name', station)
+        self.assertIn('distanceToArrival', station)
+        self.assertIn('allegiance', station)
+        self.assertIn('government', station)
+        self.assertIn('economy', station)
+        self.assertIn('secondEconomy', station)
+        self.assertIn('haveMarket', station)
+        self.assertIn('haveShipyard', station)
+        self.assertIn('haveOutfitting', station)
+        self.assertIn('otherServices', station)
+        self.assertIn('controllingFaction', station)
+        self.assertIn('updateTime', station)
+
+    def test_stations_sol_lowercase(self):
+        d = System.stations('sol')
+
+        self.assertIs(type(d), dict)
+
+        self.assertEqual(27, d['id'])
+        self.assertEqual(10477373803, d['id64'])
+        self.assertEqual('Sol', d['name'])
+        self.assertEqual('https://www.edsm.net/en/system/stations/id/27/name/Sol', d['url'])
+
+        self.assertIs(type(d['stations']), list)
+
+        # asserts assuming there are more than 0 stations in the system (there are, as of writing).
+        station = d['stations'][0]
+        self.assertIn('id', station)
+        self.assertIn('marketId', station)
+        self.assertIn('type', station)
+        self.assertIn('name', station)
+        self.assertIn('distanceToArrival', station)
+        self.assertIn('allegiance', station)
+        self.assertIn('government', station)
+        self.assertIn('economy', station)
+        self.assertIn('secondEconomy', station)
+        self.assertIn('haveMarket', station)
+        self.assertIn('haveShipyard', station)
+        self.assertIn('haveOutfitting', station)
+        self.assertIn('otherServices', station)
+        self.assertIn('controllingFaction', station)
+        self.assertIn('updateTime', station)
+
+    def test_stations_Warkawa(self):
+        d = System.stations('Warkawa')
+
+        self.assertIs(type(d), dict)
+
+        self.assertEqual(14026, d['id'])
+        self.assertEqual(18261798168017, d['id64'])
+        self.assertEqual('Warkawa', d['name'])
+        self.assertEqual('https://www.edsm.net/en/system/stations/id/14026/name/Warkawa', d['url'])
+
+        self.assertIs(type(d['stations']), list)
+
+        # asserts assuming there are more than 0 stations in the system (there are, as of writing).
+        station = d['stations'][0]
+        self.assertIn('id', station)
+        self.assertIn('marketId', station)
+        self.assertIn('type', station)
+        self.assertIn('name', station)
+        self.assertIn('distanceToArrival', station)
+        self.assertIn('allegiance', station)
+        self.assertIn('government', station)
+        self.assertIn('economy', station)
+        self.assertIn('secondEconomy', station)
+        self.assertIn('haveMarket', station)
+        self.assertIn('haveShipyard', station)
+        self.assertIn('haveOutfitting', station)
+        self.assertIn('otherServices', station)
+        self.assertIn('controllingFaction', station)
+        self.assertIn('updateTime', station)
+        
+"""
 class TrafficTest(unittest.TestCase):
     def test_bad_name_Wawawa(self):
         self.assertRaises(Exception, traffic, 'Wawawa')
@@ -71,3 +206,4 @@ class SystemsRadiusTest(unittest.TestCase):
         self.assertEqual(distance_by_name['Aulendiae'], 6.89)
 
         self.assertNotIn('Sol', json)
+"""
