@@ -52,6 +52,21 @@ class System():
 
         return query(self.url_base + endpoint, params)
 
+    @classmethod
+    def market(self, systemName, stationName):
+        """
+        systemName* (string) - name of system
+        stationName* (string) - name of station in system
+
+        returns (dict)
+
+        Queries EDSM to get market information from a given station
+        """
+        
+        endpoint = "stations/market"
+        params = {'systemName' : systemName, 'stationName' : stationName}
+
+        return query(self.url_base + endpoint, params)
 
 class Systems():
     url_base = "https://www.edsm.net/api-v1/"
