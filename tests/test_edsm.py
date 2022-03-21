@@ -1,4 +1,5 @@
 import unittest
+from xml.etree.ElementInclude import include
 
 from edsm import System
 from edsm import Systems
@@ -136,7 +137,42 @@ class SystemTest(unittest.TestCase):
         self.assertIn('otherServices', station)
         self.assertIn('controllingFaction', station)
         self.assertIn('updateTime', station)
-        
+
+class SystemsTest(unittest.TestCase):
+    def test_sphere_systems_Alcor_all_options(self):
+        d = Systems.sphere_systems(
+                'Alcor', 
+                20,
+                showId = 1,
+                showCoordinates = 1,
+                showPermit = 1,
+                showInformation = 1,
+                showPrimaryStar = 1,
+                includeHidden = 1
+        )
+
+        in_d_is_dict = [type(s) is dict for s in d]
+        self.assertTrue(all(in_d_is_dict))
+
+        # assuming there is at least 1 object returned 
+        # (there are, as of writing (and there should be, for a long while))
+        system = d[0]
+        self.assertIn('distance', system)
+        self.assertIn('bodyCount', system)
+        self.assertIn('name', system)
+        self.assertIn('id', system)
+        self.assertIn('id64', system)
+
+        self.assertIn('coords', system)
+        self.assertIs(type(system['coords']), dict)
+
+        in_coords_is_float = [type(coord) is float for coord in system['coords'].values()]
+        self.assertTrue(all(in_coords_is_float))
+
+        self.assertIn('information', system)
+        self.assertIn('primaryStar', system)
+
+
 """
 class TrafficTest(unittest.TestCase):
     def test_bad_name_Wawawa(self):

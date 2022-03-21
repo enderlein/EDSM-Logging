@@ -52,8 +52,7 @@ class System():
 
         return query(self.url_base + endpoint, params)
 
-#TODO: write tests
-#
+
 class Systems():
     url_base = "https://www.edsm.net/api-v1/"
 
