@@ -138,6 +138,19 @@ class SystemTest(unittest.TestCase):
         self.assertIn('controllingFaction', station)
         self.assertIn('updateTime', station)
 
+    def test_market_Achali_Garratt_Ring(self):
+        d = System.market('Achali', 'Garratt Ring')
+        
+        self.assertEqual(4532, d['id'])
+        self.assertEqual(3657332462314, d['id64'])
+        self.assertEqual('Achali', d['name'])
+        self.assertEqual(3230886400, d['marketId'])
+        self.assertEqual(7821, d['sId'])
+        self.assertEqual('Garratt Ring', d['sName'])
+        
+        self.assertIn('commodities', d)
+
+
 class SystemsTest(unittest.TestCase):
     def test_sphere_systems_Alcor_all_options(self):
         d = Systems.sphere_systems(

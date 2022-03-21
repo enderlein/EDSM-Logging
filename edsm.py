@@ -21,7 +21,7 @@ def query(url, params):
 class System():
     url_base = "https://www.edsm.net/api-system-v1/"
 
-    #TODO: Market endpoint, Factions endpoint
+    #TODO: Factions endpoint
 
     @classmethod
     def traffic(self, systemName):
