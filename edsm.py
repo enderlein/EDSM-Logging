@@ -17,9 +17,11 @@ def query(url, params):
     else: 
         return json.loads(r.text)
 
-
+# TODO: doc comments for classes System and Systems
 class System():
     url_base = "https://www.edsm.net/api-system-v1/"
+
+    #TODO: Market endpoint, Factions endpoint
 
     @classmethod
     def traffic(self, systemName):
@@ -50,9 +52,13 @@ class System():
 
         return query(self.url_base + endpoint, params)
 
-
+# TODO: refactor to use 'query function'
+#TODO: write tests
+#
 class Systems():
-    def systems_radius(systemName, radius, showId = 0, 
+    url_base = "https://www.edsm.net/api-v1/"
+
+    def sphere_systems(systemName, radius, showId = 0, 
         showCoordinates = 0, showPermit = 0, showInformation = 0, 
         showPrimaryStar = 0, includeHidden = 0):
         """
@@ -64,7 +70,7 @@ class Systems():
         Queries EDSM to get information on systems within a sphere radius of given system
         """
 
-        url = "https://www.edsm.net/api-v1/sphere-systems"
+        url = "sphere-systems"
         params = {'systemName' : systemName, 
         'radius' : radius, 
         'showId' : showId,

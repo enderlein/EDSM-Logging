@@ -80,7 +80,7 @@ class TrafficSphere(TrafficNetwork):
         super().__init__(*self.fetch_systems_radius(self.center, self.radius))
 
     def fetch_systems_radius(self, center, radius):
-        systems = edsm.Systems.systems_radius(systemName = center, radius = radius)
+        systems = edsm.Systems.sphere_systems(systemName = center, radius = radius)
         names = [system['name'] for system in systems]
 
         return names
