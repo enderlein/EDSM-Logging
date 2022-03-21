@@ -150,6 +150,17 @@ class SystemTest(unittest.TestCase):
         
         self.assertIn('commodities', d)
 
+    def test_factions_Warkawa_showHistory_option(self):
+        d = System.factions('Warkawa', showHistory = 1)
+
+        # tests for constants (id, id64, name) so we know it's found the right system
+
+        self.assertIn('controllingFaction', d)
+        self.assertIn('factions', d)
+
+        for faction in d['factions']:
+            self.assertIn('influenceHistory', faction)
+
 
 class SystemsTest(unittest.TestCase):
     def test_sphere_systems_Alcor_all_options(self):
@@ -164,8 +175,8 @@ class SystemsTest(unittest.TestCase):
                 includeHidden = 1
         )
 
-        in_d_is_dict = [type(s) is dict for s in d]
-        self.assertTrue(all(in_d_is_dict))
+        for system in d:
+            self.assertIs(type(system), dict)
 
         # assuming there is at least 1 object returned 
         # (there are, as of writing (and there should be, for a long while))
@@ -179,8 +190,8 @@ class SystemsTest(unittest.TestCase):
         self.assertIn('coords', system)
         self.assertIs(type(system['coords']), dict)
 
-        in_coords_is_float = [type(coord) is float for coord in system['coords'].values()]
-        self.assertTrue(all(in_coords_is_float))
+        for coord in system['coords']:
+            self.assertIs(type(system['coords'][coord]), float)
 
         self.assertIn('information', system)
         self.assertIn('primaryStar', system)
