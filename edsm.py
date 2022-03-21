@@ -1,8 +1,28 @@
 import requests
 import json
 
+import config
+
+def query(url, params):
+    try:
+        headers = {'User-Agent' : config.USER_AGENT}
+        r = requests.get(url, params = params, headers = headers)
+    
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+
+    if r.text == '{}':
+        raise Exception(f"Received empty object from query: url={url}, params={params}")
+
+    else: 
+        return json.loads(r.text)
+
+
 class System():
-    def traffic(systemName):
+    url_base = "https://www.edsm.net/api-system-v1/"
+
+    @classmethod
+    def traffic(self, systemName):
         """
         systemName* (string) - name of system 
 
@@ -10,24 +30,13 @@ class System():
 
         Queries EDSM to get traffic data for a single system
         """
-        
-        url = "https://www.edsm.net/api-system-v1/traffic"
+        endpoint = "traffic"
         params = {'systemName' : systemName}
         
-        try:
-            r = requests.get(url, params = params)
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
+        return query(self.url_base + endpoint, params)
 
-        d = json.loads(r.text)
-
-        if d:
-            return d
-
-        elif d == {}: 
-            raise Exception(f"Received empty object in edsm.traffic('{systemName}')")
-
-    def stations(systemName):
+    @classmethod
+    def stations(self, systemName):
         """
         systemName* (string) - name of system
 
@@ -36,8 +45,10 @@ class System():
         Queries EDSM to get information on stations in a given system
         """
 
-        url = "https://www.edsm.net/api-system-v1/stations"
+        endpoint = "stations"
         params = {'systemName' : systemName}
+
+        return query(self.url_base + endpoint, params)
 
 
 class Systems():
