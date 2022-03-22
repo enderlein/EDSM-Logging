@@ -1,5 +1,4 @@
 import unittest
-from xml.etree.ElementInclude import include
 
 from edsm import System
 from edsm import Systems
@@ -92,6 +91,7 @@ class SystemTest(unittest.TestCase):
 
         # asserts assuming there are more than 0 stations in the system (there are, as of writing).
         station = d['stations'][0]
+        # TODO: rewrite these so theyre testing for format, too. Need to know that json was decoded properly
         self.assertIn('id', station)
         self.assertIn('marketId', station)
         self.assertIn('type', station)
@@ -174,6 +174,30 @@ class SystemsTest(unittest.TestCase):
                 showPrimaryStar = 1,
                 includeHidden = 1
         )
+
+        for system in d:
+            self.assertIs(type(system), dict)
+
+        # assuming there is at least 1 object returned 
+        # (there are, as of writing (and there should be, for a long while))
+        system = d[0]
+        self.assertIn('distance', system)
+        self.assertIn('bodyCount', system)
+        self.assertIn('name', system)
+        self.assertIn('id', system)
+        self.assertIn('id64', system)
+
+        self.assertIn('coords', system)
+        self.assertIs(type(system['coords']), dict)
+
+        for coord in system['coords']:
+            self.assertIs(type(system['coords'][coord]), float)
+
+        self.assertIn('information', system)
+        self.assertIn('primaryStar', system)
+
+    def test_sphere_systems_Alcor_showAll(self):
+        d = Systems.sphere_systems('Alcor', 20, showAll = 1)
 
         for system in d:
             self.assertIs(type(system), dict)
