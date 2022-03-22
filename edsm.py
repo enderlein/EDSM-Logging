@@ -67,6 +67,21 @@ class System():
         return query(self.url_base + endpoint, params)
 
     @classmethod
+    def marketById(self, marketId):
+        """
+        marketId* (int) - in-game market Id
+
+        returns (dict)
+
+        Queries EDSM to get market information from a station with given marketId
+        """
+
+        endpoint = "stations/market"
+        params = {'marketId' : marketId}
+
+        return query(self.url_base + endpoint, params)
+
+    @classmethod
     def factions(self, systemName, showHistory = 0):
         """
         systemName* (string) - name of system
