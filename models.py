@@ -11,6 +11,51 @@ MODEL class System:
 
         each will hold .update() to fetch new data from API
 """
+
+# TODO: Annotate properties so it's return value's format is clear
+# TODO: Finish writing System model, will have to add System endpoint first
+class System():
+    def __init__(self, system_name):
+        self._name = system_name
+        self._data = None
+
+        self.populate()
+
+    def populate(self):
+        self.bodyCount = d['']
+
+    @property
+    def stations(self):
+        pass
+
+    @property
+    def traffic(self):
+        pass
+
+class Stations():
+    """
+    Models response from EDSM System/stations endpoint
+    """
+
+    def __init__(self, system_name):
+        self.system_name = system_name
+        self._stations = None
+        # does not contain a self.populate() because most of the data in EDSM System/stations response
+        # is already represented in <System> object
+
+    @property
+    def stations(self):
+        if self._stations == None:
+            d = edsm.System.stations(self.system_name)
+
+            self._stations = list(map(lambda station_data: Station(station_data), d['stations']))
+
+        return self._stations
+
+    def update(self):
+        d = edsm.System.stations(self.system_name)
+        self._stations = list(map(lambda station_data: Station(station_data), d['stations']))
+
 class Station():
     """
     Models individual station objects in array received in response from EDSM System/stations endpoint
