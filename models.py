@@ -11,10 +11,55 @@ MODEL class System:
 
         each will hold .update() to fetch new data from API
 """
+class Station():
+    """
+    Models individual station objects in array received in response from EDSM System/stations endpoint
+    """
+    def __init__(self, station_data):
+        self._market = None
+
+        self.populate(station_data)
+
+    def populate(self, d):
+        self.id = d['id']
+        self.marketId = d['marketId']
+        self.type = d['type']
+        self.name = d['name']
+        self.distanceToArrival = d['distanceToArrival']
+        self.allegiance = d['allegiance']
+        self.government = d['government']
+        self.economy = d['economy']
+        self.secondEconomy = d['secondEconomy']
+        self.haveMarket = d['haveMarket']
+        self.haveShipyard = d['haveShipyard']
+        self.haveOutfitting = d['haveOutfitting']
+        self.otherServices = d['otherServices']
+        self.updateTime = d['updateTime']
+
+    @property
+    def market(self):
+        if self._market == None:
+            market_data = edsm.System.marketById(self.marketId)
+            self._market = Market(market_data)
+
+        return self._market
+
+class Market():
+    def __init__(self, market_data):
+        self.populate(market_data)
+
+    def populate(self, d):
+        self.id = d['id']
+        self.id64 = d['id64']
+        self.name = d['name']
+        self.marketId = d['marketId']
+        self.sId = d['sId']
+        self.sName = d['sName']
+        self.commodities = d['commodities']
 
 class Traffic():
     """
-    Models EDSM traffic data
+    Models response from EDSM System/traffic endpoint
     """
     def __init__(self, system_name):
         self.system_name = system_name
