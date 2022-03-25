@@ -197,7 +197,7 @@ class SystemsTest(unittest.TestCase):
         self.assertIn('primaryStar', system)
 
     def test_sphere_systems_Alcor_showAll(self):
-        d = Systems.sphere_systems('Alcor', 20, showAll = 1)
+        d = Systems.sphere_systems('Alcor', 20, showAllInfo = 1)
 
         for system in d:
             self.assertIs(type(system), dict)
