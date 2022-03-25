@@ -101,9 +101,49 @@ class Systems():
     url_base = "https://www.edsm.net/api-v1/"
 
     @classmethod
+    def system(self, systemName, showId = 0, 
+        showCoordinates = 0, showPermit = 0, showInformation = 0, 
+        showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
+        """
+        systemName* (string) - name of system
+
+        showId (int) - (0 : False, 1 : True)
+        showCoordinates (int) - (0 : False, 1 : True)
+        showPermit (int) - (0 : False, 1 : True)
+        showInformation (int) - (0 : False, 1 : True)
+        showPrimaryStar (int) - (0 : False, 1 : True)
+        includeHidden (int) - (0 : False, 1 : True)
+
+        showAllInfo (int) - 0 : False, 1 : True - whether to set all optional args to 1
+
+        returns (dict)
+
+        Queries EDSM to get information on a system
+        """
+        
+        if showAllInfo:
+            showId = 1
+            showCoordinates = 1
+            showPermit = 1
+            showInformation = 1
+            showPrimaryStar = 1
+            includeHidden = 1
+
+        endpoint = "system"
+        params = {'systemName' : systemName, 
+        'showId' : showId,
+        'showCoordinates' : showCoordinates,
+        'showPermit' : showPermit,
+        'showInformation' : showInformation,
+        'showPrimaryStar' : showPrimaryStar,
+        'includeHidden' : includeHidden}
+
+        return query(self.url_base + endpoint, params)
+        
+    @classmethod
     def sphere_systems(self, systemName, radius, showId = 0, 
         showCoordinates = 0, showPermit = 0, showInformation = 0, 
-        showPrimaryStar = 0, includeHidden = 0, showAll = 0):
+        showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
         """
         systemName* (string) - name of system at the center of the radius
         radius* (int) - radius of search sphere (in lightyears)
@@ -115,14 +155,14 @@ class Systems():
         showPrimaryStar (int) - (0 : False, 1 : True)
         includeHidden (int) - (0 : False, 1 : True)
 
-        showAll (int) - 0 : False, 1 : True - whether to set all optional args to 1
+        showAllInfo (int) - 0 : False, 1 : True - whether to set all optional args to 1
 
         returns (dict)
 
         Queries EDSM to get information on systems within a sphere radius of given system
         """
 
-        if showAll:
+        if showAllInfo:
             showId = 1
             showCoordinates = 1
             showPermit = 1
