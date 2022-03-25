@@ -2,10 +2,9 @@ import edsm
 
 # TODO: Annotate properties so its return value's format is clear
 # TODO: Finish writing System model, will have to add System endpoint first
+# TODO: Take advantage of __dict__ instead of doing all this nonsense.
 class System():
     """
-    Models an individual system
-
     arg system_data* (dict)
 
     property stations (Stations)
@@ -19,14 +18,14 @@ class System():
     attr requirePermit (bool or None)
     attr information (dict or None)
     attr primaryStar (dict or None)
+
+    Models an individual system
     """
     def __init__(self, system_data):
-        self._data = system_data
+        self.__dict__ = system_data # does what .populate() does but so much nicer
 
         self._stations = None
         self._traffic = None
-
-        self.populate(self._data)
 
     def populate(self, d):
 
@@ -127,10 +126,10 @@ class Stations():
         if self._stations == {}:
             self.update()
 
-        return self._stations.values()
+        return list(self._stations.values())
 
     def get_station(self, station_name):
-        return self.stations[station_name]
+        return self._stations[station_name]
 
     def update(self):
         d = edsm.System.stations(self.system_name)
