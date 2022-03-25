@@ -10,6 +10,15 @@ class System():
 
     property stations (Stations)
     property traffic (Traffic)
+
+    attr name (str)
+    attr id (int or None)
+    attr id64 (int or None)
+    attr coords (dict or None)
+    attr coordsLocked (bool or None)
+    attr requirePermit (bool or None)
+    attr information (dict or None)
+    attr primaryStar (dict or None)
     """
     def __init__(self, system_data):
         self._data = system_data
@@ -52,11 +61,11 @@ class Traffic():
     """
     arg system_name* (str) - name of system 
     
-    property data
-    property total
-    property week
-    property day
-    property breakdown
+    property data (dict)
+    property total (int)
+    property week (int)
+    property day (int)
+    property breakdown (dict)
 
     method update
 
@@ -98,9 +107,9 @@ class Stations():
     """
     arg system_name* (str) - name of system
 
-    property stations
+    property stations (list)
 
-    method get_station
+    method get_station (Station)
     method update
 
     Models response from EDSM System/stations endpoint
@@ -118,7 +127,7 @@ class Stations():
         if self._stations == {}:
             self.update()
 
-        return self._stations
+        return self._stations.values()
 
     def get_station(self, station_name):
         return self.stations[station_name]
@@ -134,6 +143,17 @@ class Station():
     attr id (int)
     attr marketId (int)
     attr type (int)
+    attr name (str)
+    attr distanceToArrival (int)
+    attr allegiance (str)
+    attr government (str)
+    attr economy (str)
+    attr secondEconomy (str)
+    attr haveMarket (bool)
+    attr haveShipyard (bool)
+    attr haveOutfitting (bool)
+    attr otherServices (list)
+    attr updateTime (dict)
 
     property market
 
@@ -176,6 +196,14 @@ class Station():
 class Market():
     """
     arg market_data* (dict)
+
+    attr id (int)
+    attr id64 (int)
+    attr name (str)
+    attr marketId (int)
+    attr sId (int)
+    attr sName (str)
+    attr commodities (dict)
 
     Models station market data.
     Child of <Station> objects
