@@ -3,6 +3,8 @@ import edsm
 # TODO: Annotate properties so its return value's format is clear
 # TODO: Finish writing System model, will have to add System endpoint first
 # TODO: Take advantage of __dict__ instead of doing all this nonsense.
+# TODO: Start collecting data and consider how you want to use it before you finish bulding
+#these models
 class System():
     """
     arg system_data* (dict)
@@ -24,36 +26,8 @@ class System():
     def __init__(self, system_data):
         self.__dict__ = system_data # does what .populate() does but so much nicer
 
-        self._stations = None
-        self._traffic = None
-
-    def populate(self, d):
-
-        # successful responses will always show name
-        self.name = d['name']
-
-        # TODO: there is probs a better way to default
-        self.id = d['id'] if 'id' in d else None
-        self.id64 = d['id64'] if 'id64' in d else None
-        self.coords = d['coords'] if 'coords' in d else None
-        self.coordsLocked = d['coordsLocked'] if 'coordsLocked' in d else None
-        self.requirePermit = d['requirePermit'] if 'requirePermit' in d else None
-        self.information = d['information'] if 'information' in d else None
-        self.primaryStar = d['primaryStar'] if 'primaryStar' in d else None
-
-    @property
-    def stations(self):
-        if self._stations == None:
-            self._stations = Stations(self.name)
-
-        return self._stations
-
-    @property
-    def traffic(self):
-        if self._traffic == None:
-            self._traffic = Traffic(self.name)
-
-        return self._traffic
+        self.stations = Stations(self.name)
+        self.traffic = Traffic(self.name)
 
 
 class Traffic():
@@ -73,34 +47,34 @@ class Traffic():
     """
     def __init__(self, system_name):
         self.system_name = system_name
-        self._data = None
+        self._traffic = None
 
     
     @property
-    def data(self):
-        if self._data == None:
-            self._data = edsm.System.traffic(self.system_name)
+    def traffic(self):
+        if self._traffic == None:
+            self.update()
 
-        return self._data
+        return self._traffic
 
     @property
     def total(self):
-        return self.data['traffic']['total']
+        return self.traffic['traffic']['total']
 
     @property
     def week(self):
-        return self.data['traffic']['week']
+        return self.traffic['traffic']['week']
 
     @property
     def day(self):
-        return self.data['traffic']['day']
+        return self.traffic['traffic']['day']
 
     @property
     def breakdown(self):
-        return self.data['breakdown']
+        return self.traffic['breakdown']
 
     def update(self):
-        self._data = edsm.System.traffic(self.system_name)
+        self._traffic = edsm.System.traffic(self.system_name)
 
 class Stations():
     """
@@ -160,28 +134,11 @@ class Station():
     Child of <Stations> objects.
     """
     def __init__(self, station_data):
-        self._market = None
-
-        self.populate(station_data)
+        self.__dict__ = station_data
+        self._market = None 
 
     def __repr__(self):
-        return f'Station(name="{self.name}", haveMarket="{self.haveMarket}")'
-
-    def populate(self, d):
-        self.id = d['id']
-        self.marketId = d['marketId']
-        self.type = d['type']
-        self.name = d['name']
-        self.distanceToArrival = d['distanceToArrival']
-        self.allegiance = d['allegiance']
-        self.government = d['government']
-        self.economy = d['economy']
-        self.secondEconomy = d['secondEconomy']
-        self.haveMarket = d['haveMarket']
-        self.haveShipyard = d['haveShipyard']
-        self.haveOutfitting = d['haveOutfitting']
-        self.otherServices = d['otherServices']
-        self.updateTime = d['updateTime']
+        return f'<models.Station(name="{self.name}", haveMarket="{self.haveMarket}")>'
 
     @property
     def market(self):
@@ -208,16 +165,7 @@ class Market():
     Child of <Station> objects
     """
     def __init__(self, market_data):
-        self.populate(market_data)
-
-    def populate(self, d):
-        self.id = d['id']
-        self.id64 = d['id64']
-        self.name = d['name']
-        self.marketId = d['marketId']
-        self.sId = d['sId']
-        self.sName = d['sName']
+        self.__dict__ = market_data
+        
         # TODO: model commodities
-        self.commodities = d['commodities']
-
-    # TODO: update method?
+        # TODO: update method?
