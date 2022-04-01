@@ -48,8 +48,8 @@ class SphereLogger():
                             'id' : system.id,
                             'id64' : system.id64,
                             'coords' : system.coords,
-                            'traffic' : system.traffic.traffic['traffic'],
-                            'breakdown' : system.traffic.traffic['breakdown'],
+                            'traffic' : system.traffic.traffic,
+                            'breakdown' : system.traffic.breakdown,
                             'timestamp' : timestamp}
 
                 s = json.dumps(payload)
