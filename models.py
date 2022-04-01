@@ -55,23 +55,23 @@ class Traffic():
         if self._traffic == None:
             self.update()
 
-        return self._traffic
+        return self._traffic['traffic']
 
     @property
     def total(self):
-        return self.traffic['traffic']['total']
+        return self._traffic['traffic']['total']
 
     @property
     def week(self):
-        return self.traffic['traffic']['week']
+        return self._traffic['traffic']['week']
 
     @property
     def day(self):
-        return self.traffic['traffic']['day']
+        return self._traffic['traffic']['day']
 
     @property
     def breakdown(self):
-        return self.traffic['breakdown']
+        return self._traffic['breakdown']
 
     def update(self):
         self._traffic = edsm.System.traffic(self.system_name)
@@ -81,6 +81,7 @@ class Stations():
     arg system_name* (str) - name of system
 
     property stations (list)
+    property stations_by_name (dict)
 
     method get_station (Station)
     method update
@@ -91,23 +92,29 @@ class Stations():
 
     def __init__(self, system_name):
         self.system_name = system_name
-        self._stations = {}
+        self._stations = None
         # does not contain a self.populate() because most of the data in EDSM System/stations response
         # is already represented in <System> object
 
     @property
-    def stations(self):
-        if self._stations == {}:
+    def stations_by_name(self):
+        if self._stations == None:
             self.update()
 
-        return list(self._stations.values())
+        return dict(map(lambda station_data: (station_data['name'], Station(station_data)), self._stations['stations']))
+
+    @property
+    def stations(self):
+        if self._stations == None:
+            self.update()
+
+        return list(self.stations_by_name.values())
 
     def get_station(self, station_name):
-        return self._stations[station_name]
+        return self.stations_by_name[station_name]
 
     def update(self):
-        d = edsm.System.stations(self.system_name)
-        self._stations = dict(map(lambda station_data: (station_data['name'], Station(station_data)), d['stations']))
+        self._stations = edsm.System.stations(self.system_name)
 
 class Station():
     """
@@ -138,27 +145,26 @@ class Station():
         self._market = None 
 
     def __repr__(self):
-        return f'<models.Station(name="{self.name}", haveMarket="{self.haveMarket}")>'
+        return f'<{self.__module__}.{self.__class__.__name__}(name="{self.name}", haveMarket={self.haveMarket})>'
 
     @property
     def market(self):
         if self._market == None:
-            market_data = edsm.System.marketById(self.marketId)
-            self._market = Market(market_data)
+            self._market = edsm.System.marketById(self.marketId)
 
-        return self._market
+        return Market(self._market)
 
 
 class Market():
     """
     arg market_data* (dict)
 
-    attr id (int)
-    attr id64 (int)
-    attr name (str)
+    attr id (int) - system ID
+    attr id64 (int) - system ID64
+    attr name (str) - system name
     attr marketId (int)
-    attr sId (int)
-    attr sName (str)
+    attr sId (int) - station ID
+    attr sName (str) - station name
     attr commodities (dict)
 
     Models station market data.
