@@ -96,8 +96,6 @@ class Stations():
     def __init__(self, system_name):
         self.system_name = system_name
         self._stations = None
-        # does not contain a self.populate() because most of the data in EDSM System/stations response
-        # is already represented in <System> object
 
     @property
     def stations_by_name(self):

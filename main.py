@@ -10,26 +10,23 @@ import config
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
 # TODO: Logs should be grouped. As is, data is saved as a bunch of loose json objects. 
 # They should be bundled by timestamp. to make comparison easier.
+
+# TODO: ABCs lol
 class SystemsLogger():
-    def __init__(self, center, radius, delay, keys):
-        self.filename = f'{center}_{radius}ly.data' # TODO: there are better options for filename generation
+    def __init__(self, delay, keys):
+        self.filename = f'{self}.data'
         self.keys = keys
 
-        self._systems_data = None
+        self.systems_data = None
         self._systems = None
 
-        # TODO: bad to have here, not general properties.
-        # center and radius should be defined in Child classes (where needed)
-        self.center = center
-        self.radius = radius
         self.delay = delay
 
     @property
     def systems(self):
         # Wrap objs from query data with models.System objects
-        # TODO: System objs should be persistent, not generated on the fly
         if not self._systems:
-            self._systems = list(map(lambda d: models.System(d), self._systems_data))
+            self._systems = list(map(lambda d: models.System(d), self.systems_data))
 
         return self._systems
 
@@ -84,8 +81,9 @@ class SystemsLogger():
 
 class SphereLogger(SystemsLogger):
     def __init__(self, center, radius, delay, keys):
-        super().__init__(center, radius, delay, keys)
-        self._systems_data = edsm.Systems.sphere_systems(self.center, self.radius, showAllInfo=1)
+        super().__init__(delay, keys)
+        self.filename = f"{center} - {radius}ly.data"
+        self.systems_data = edsm.Systems.sphere_systems(center, radius, showAllInfo=1)
 """
 class SphereLogger():
     def __init__(self, sphere: traffic.TrafficSphere, sleep):
