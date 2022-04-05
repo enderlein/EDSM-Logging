@@ -1,10 +1,9 @@
 import edsm
 
 # TODO: Annotate properties so its return value's format is clear
-# TODO: Finish writing System model, will have to add System endpoint first
-# TODO: Take advantage of __dict__ instead of doing all this nonsense.
-# TODO: Start collecting data and consider how you want to use it before you finish bulding
-#these models
+# TODO: give each model a dumps() func 
+# TODO: Automate docstrings. 
+
 class System():
     """
     arg system_data* (dict)
@@ -34,7 +33,7 @@ class Traffic():
     """
     arg system_name* (str) - name of system 
     
-    property data (dict)
+    property traffic (dict)
     property total (int)
     property week (int)
     property day (int)
@@ -76,6 +75,10 @@ class Traffic():
     def update(self):
         self._traffic = edsm.System.traffic(self.system_name)
 
+    def dumpdict(self):
+        return {'traffic' : self.traffic, 'breakdown' : self.breakdown}
+
+
 class Stations():
     """
     arg system_name* (str) - name of system
@@ -101,6 +104,7 @@ class Stations():
         if self._stations == None:
             self.update()
 
+        # TODO: Change so you're not generating a new Station obj every time, objs should be persistent
         return dict(map(lambda station_data: (station_data['name'], Station(station_data)), self._stations['stations']))
 
     @property
