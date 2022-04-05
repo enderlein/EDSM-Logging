@@ -3,11 +3,14 @@ import json
 
 import config
 
+# TODO: properly handle 429 response (automatically show retry-after header)
+# TODO: conditions for handling response codes other than 200 lol
 def query(url, params):
     try:
         headers = {'User-Agent' : config.USER_AGENT}
         r = requests.get(url, params = params, headers = headers)
-    
+    # remove exception,redundant. requests already raises an exception on RequestExceptions. 
+    # cmon bro think
     except requests.exceptions.RequestException as e:
         raise SystemExit(e)
 
