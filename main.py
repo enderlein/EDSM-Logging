@@ -8,11 +8,11 @@ import edsm
 import config
 
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
-# TODO: Logs should be grouped. As is, data is saved as a bunch of loose json objects. 
-# They should be bundled by timestamp. to make comparison easier.
 # TODO: logging
+# TODO: Annotate
 
 # TODO: ABCs lol
+# TODO: reimplement delay arg, but with default
 class SystemsLogger():
     def __init__(self, keys):
         self.keys = keys
@@ -37,9 +37,10 @@ class SystemsLogger():
 
         return obj.__dict__[key]
 
-    def gather_keys(self, system):
-        # creates dict of format {k : self.parse_key(system, k) for k in self.keys}
-        return dict(map(lambda k: (k, self.parse_key(system, k)), self.keys))
+    def gather_keys(self):
+        # creates a list of dicts (dicts here represent <System> objs) containing data indicated by self.keys
+        # faster way to do [{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
+        return list(map(lambda system: dict(map(lambda k: (k, self.parse_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
         # TODO: Find a better way to toggle these.
@@ -59,9 +60,24 @@ class SystemsLogger():
             for system in self.systems:
                 executor.submit(system.stations.update)
         
-    def append_file(self, file, data):
-        with open(file, 'a') as f:
-            f.write(data + '\n')
+    def append_json(self, file, data):
+        # expecting data from file to be parseable as json array
+        # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty strings, TODO: narrow this exception)
+        try:
+            file_read = open(file, 'r')
+            old_data = json.loads(file_read.read())
+            file_read.close()
+                
+        except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
+            # TODO: log exception (as warning)
+            old_data = []
+
+        merged_data = json.dumps(old_data + data, indent=4)
+
+        file_write = open(file, 'w')
+        file_write.write(merged_data)
+
+        file_write.close()
 
     def log(self):
         
@@ -69,16 +85,14 @@ class SystemsLogger():
 
         timestamp = int(time.time())
 
-        for system in self.systems:
-            # TODO: Rework output format, group by timestamp
-            # TODO: Generalize as generate_json() and write_json() methods
-            # so it's easier to implement other output formats (i.e csv)
-            payload = self.gather_keys(system)
+        # TODO: Generalize as generate_json() method
+        # so it's easier to implement switching to other output formats (i.e csv, idk)
+        payload = self.gather_keys()
 
-            payload['timestamp'] = timestamp
-            
-            s = json.dumps(payload)
-            self.append_file(self.filename, s)
+        for system in payload:
+            system['timestamp'] = timestamp
+        
+        self.append_json(self.filename, payload)
         
 
 class SphereLogger(SystemsLogger):
