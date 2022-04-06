@@ -108,7 +108,9 @@ class SystemsLogger():
             self.log()
             self.sleep()
 
-            # TODO: Log time slept at/sleeping for
+            # TODO: Replace with logging event
+            sleep_time = time.strftime("%H:%M:%S", time.localtime())
+            print(f"{self} :Sleeping: for {self.delay} seconds (since {sleep_time})")
         
 
 class SphereLogger(SystemsLogger):
