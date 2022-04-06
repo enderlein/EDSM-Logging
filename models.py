@@ -3,7 +3,7 @@ import edsm
 # TODO: Annotate properties so its return value's format is clear
 # TODO: give each model a dumps() func 
 # TODO: Automate docstrings. 
-
+# TODO: Logging
 class System():
     """
     arg system_data* (dict)
