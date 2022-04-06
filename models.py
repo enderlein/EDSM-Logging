@@ -99,24 +99,21 @@ class Stations():
 
     @property
     def stations_by_name(self):
-        if self._stations == None:
-            self.update()
-
-        # TODO: Change so you're not generating a new Station obj every time, objs should be persistent
-        return dict(map(lambda station_data: (station_data['name'], Station(station_data)), self._stations['stations']))
+        return dict(map(lambda s: (s.name, s), self.stations))
 
     @property
     def stations(self):
         if self._stations == None:
             self.update()
 
-        return list(self.stations_by_name.values())
+        return self._stations
 
     def get_station(self, station_name):
         return self.stations_by_name[station_name]
 
     def update(self):
-        self._stations = edsm.System.stations(self.system_name)
+        stations = edsm.System.stations(self.system_name)
+        self._stations = list(map(lambda s: Station(s), stations['stations']))
 
 class Station():
     """
@@ -152,9 +149,14 @@ class Station():
     @property
     def market(self):
         if self._market == None:
-            self._market = edsm.System.marketById(self.marketId)
+            self.update_market()
 
-        return Market(self._market)
+        # should not generate new Market obj every time. objs should be persistent.
+        return self._market
+
+    def update_market(self):
+        market_data = edsm.System.marketById(self.marketId)
+        self._market = Market(market_data)
 
 
 class Market():
