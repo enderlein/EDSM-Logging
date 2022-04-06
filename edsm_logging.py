@@ -101,16 +101,15 @@ class SystemsLogger():
         self.append_json(self.filename, payload)
     
     def sleep(self):
+        # TODO: Replace print with logging event
+        sleep_time = time.strftime("%H:%M:%S", time.localtime())
+        print(f"{self} :Sleeping: for {self.delay} seconds (since {sleep_time})")
         time.sleep(self.delay)
 
     def run(self):
         while True:
             self.log()
             self.sleep()
-
-            # TODO: Replace with logging event
-            sleep_time = time.strftime("%H:%M:%S", time.localtime())
-            print(f"{self} :Sleeping: for {self.delay} seconds (since {sleep_time})")
         
 
 class SphereLogger(SystemsLogger):
