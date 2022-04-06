@@ -14,8 +14,9 @@ import config
 # TODO: ABCs lol
 # TODO: reimplement delay arg, but with default
 class SystemsLogger():
-    def __init__(self, keys):
+    def __init__(self, keys, delay=config.DEFAULT_SLEEP):
         self.keys = keys
+        self.delay = delay
 
         self._systems = None
 
@@ -32,6 +33,7 @@ class SystemsLogger():
         return self._systems
 
     def parse_key(self, obj, key):
+        # exceptions for grabbing data captured in <Traffic> and (TODO) <Stations> objects
         if isinstance(obj.__dict__[key], models.Traffic):
             return obj.__dict__[key].dumpdict()
 
@@ -43,6 +45,7 @@ class SystemsLogger():
         return list(map(lambda system: dict(map(lambda k: (k, self.parse_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
+        # update depending on which keys are needed
         # TODO: Find a better way to toggle these.
         if 'traffic' in self.keys:
             self.update_traffic()
@@ -51,11 +54,13 @@ class SystemsLogger():
             self.update_stations()
 
     def update_traffic(self):
+        # Update all traffic objects using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.traffic.update)
 
     def update_stations(self):
+        # Update all stations objects using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.stations.update)
@@ -80,7 +85,8 @@ class SystemsLogger():
         file_write.close()
 
     def log(self):
-        
+        # Timestamps and dumps captured data as json to file :<self>.filename:
+
         self.update_by_keys()
 
         timestamp = int(time.time())
@@ -93,11 +99,21 @@ class SystemsLogger():
             system['timestamp'] = timestamp
         
         self.append_json(self.filename, payload)
+    
+    def sleep(self):
+        time.sleep(self.delay)
+
+    def run(self):
+        while True:
+            self.log()
+            self.sleep()
+
+            # TODO: Log time slept at/sleeping for
         
 
 class SphereLogger(SystemsLogger):
-    def __init__(self, center, radius, keys):
-        super().__init__(keys)
+    def __init__(self, center, radius, keys, delay=config.DEFAULT_SLEEP):
+        super().__init__(keys, delay=delay)
 
         self.filename = f"{center} - {radius}ly.json"
         self.systems_data = edsm.Systems.sphere_systems(center, radius, showAllInfo=1)
