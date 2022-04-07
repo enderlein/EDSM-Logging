@@ -4,7 +4,6 @@ import json
 import config
 
 # TODO: properly handle 429 response (automatically show retry-after header)
-# TODO: conditions for handling response codes other than 200 lol
 def query(url, params):
     headers = {'User-Agent' : config.USER_AGENT}
     r = requests.get(url, params = params, headers = headers)
@@ -20,7 +19,7 @@ def query(url, params):
         + f'status_code={r.status_code} -- "{r.reason}"\n'
         + f'headers={r.headers}')
 
-# TODO: doc comments for classes System and Systems
+
 class System():
     url_base = "https://www.edsm.net/api-system-v1/"
 
