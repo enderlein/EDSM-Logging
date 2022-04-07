@@ -56,7 +56,7 @@ class Traffic():
     def breakdown(self) -> dict:
         if self._traffic == None:
             self.update()
-            
+
         return self._traffic['breakdown']
 
     def update(self) -> None:
@@ -88,6 +88,7 @@ class Stations():
 
     @property
     def stations_by_name(self) -> dict:
+        # dict{s.name : s for s in self.stations}
         return dict(map(lambda s: (s.name, s), self.stations))
 
     @property
@@ -105,7 +106,7 @@ class Stations():
 
     def update(self):
         stations = edsm.System.stations(self.system_name)
-        # wrap each station obj with <Station>
+        # list[Station(s) for s in stations['stations']]
         self._stations = list(map(lambda s: Station(s), stations['stations']))
 
 class Station():
