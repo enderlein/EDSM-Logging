@@ -54,6 +54,9 @@ class Traffic():
 
     @property
     def breakdown(self) -> dict:
+        if self._traffic == None:
+            self.update()
+            
         return self._traffic['breakdown']
 
     def update(self) -> None:
