@@ -27,7 +27,7 @@ class SystemsLogger():
     @property
     def systems(self):
         if not self._systems:
-            # Wrap system objs from query with models.System objects
+            # list[models.System(d) for d in self.systems_data]
             self._systems = list(map(lambda d: models.System(d), self.systems_data))
 
         return self._systems
@@ -40,8 +40,9 @@ class SystemsLogger():
         return obj.__dict__[key]
 
     def gather_keys(self):
-        # creates a list of dicts (dicts here represent <System> objs) containing data indicated by self.keys
-        # faster way to do [{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
+        # creates a list of dicts containing system data indicated by self.keys
+
+        # list[dict{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
         return list(map(lambda system: dict(map(lambda k: (k, self.parse_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
@@ -67,7 +68,7 @@ class SystemsLogger():
         
     def append_json(self, file, data):
         # expecting data from file to be parseable as json array
-        # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty strings, TODO: narrow this exception)
+        # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, TODO: narrow this exception)
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
