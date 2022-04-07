@@ -7,7 +7,7 @@ class SystemTest(unittest.TestCase):
     def test_traffic_Wawawa(self):
         # as of writing this, there are no systems in the game named 'Wawawa', 
         # so System.traffic should return an empty obj
-        self.assertRaises(Exception, System.traffic, 'Wawawa')
+        self.assertEquals(System.traffic('Wawawa'), {})
         
     def test_traffic_Sol(self):
         d = System.traffic('Sol')
