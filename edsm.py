@@ -6,19 +6,19 @@ import config
 # TODO: properly handle 429 response (automatically show retry-after header)
 # TODO: conditions for handling response codes other than 200 lol
 def query(url, params):
-    try:
-        headers = {'User-Agent' : config.USER_AGENT}
-        r = requests.get(url, params = params, headers = headers)
-    # remove exception,redundant. requests already raises an exception on RequestExceptions. 
-    # cmon bro think
-    except requests.exceptions.RequestException as e:
-        raise SystemExit(e)
+    headers = {'User-Agent' : config.USER_AGENT}
+    r = requests.get(url, params = params, headers = headers)
 
-    if r.text == '{}':
-        raise Exception(f"Received empty object from query: url={url}, params={params}")
-
-    else: 
+    if r.status_code == 200:
         return json.loads(r.text)
+
+    else:
+        # Abrupt, only for now
+        # TODO: just log a warning and return empty dict
+        raise Exception(f'A request has returned with a response code other than 200\n' 
+        + f'url={url}\nparams={params}\n'
+        + f'status_code={r.status_code} -- "{r.reason}"\n'
+        + f'headers={r.headers}')
 
 # TODO: doc comments for classes System and Systems
 class System():
@@ -27,9 +27,9 @@ class System():
     @classmethod
     def traffic(self, systemName):
         """
-        systemName* (string) - name of system 
+        systemName* <string> - name of system 
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get traffic data for a single system
         """
@@ -41,9 +41,9 @@ class System():
     @classmethod
     def stations(self, systemName):
         """
-        systemName* (string) - name of system
+        systemName* <string> - name of system
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get information on stations in a given system
         """
@@ -56,10 +56,10 @@ class System():
     @classmethod
     def market(self, systemName, stationName):
         """
-        systemName* (string) - name of system
-        stationName* (string) - name of station in system
+        systemName* <string> - name of system
+        stationName* <string> - name of station in system
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get market information from a given station
         """
@@ -72,9 +72,9 @@ class System():
     @classmethod
     def marketById(self, marketId):
         """
-        marketId* (int) - in-game market Id
+        marketId* <int> - in-game market Id
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get market information from a station with given marketId
         """
@@ -87,10 +87,10 @@ class System():
     @classmethod
     def factions(self, systemName, showHistory = 0):
         """
-        systemName* (string) - name of system
-        showHistory (int) - show factions history (0 : False, 1 : True)
+        systemName* <string> - name of system
+        showHistory <int> - show factions history (0 : False, 1 : True)
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get information on stations in a given system
         """
@@ -108,18 +108,18 @@ class Systems():
         showCoordinates = 0, showPermit = 0, showInformation = 0, 
         showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
         """
-        systemName* (string) - name of system
+        systemName* <string> - name of system
 
-        showId (int) - (0 : False, 1 : True)
-        showCoordinates (int) - (0 : False, 1 : True)
-        showPermit (int) - (0 : False, 1 : True)
-        showInformation (int) - (0 : False, 1 : True)
-        showPrimaryStar (int) - (0 : False, 1 : True)
-        includeHidden (int) - (0 : False, 1 : True)
+        showId <int> - (0 : False, 1 : True)
+        showCoordinates <int> - (0 : False, 1 : True)
+        showPermit <int> - (0 : False, 1 : True)
+        showInformation <int> - (0 : False, 1 : True)
+        showPrimaryStar <int> - (0 : False, 1 : True)
+        includeHidden <int> - (0 : False, 1 : True)
 
-        showAllInfo (int) - 0 : False, 1 : True - whether to set all optional args to 1
+        showAllInfo <int> - 0 : False, 1 : True - whether to set all optional args to 1
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get information on a system
         """
@@ -148,19 +148,19 @@ class Systems():
         showCoordinates = 0, showPermit = 0, showInformation = 0, 
         showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
         """
-        systemName* (string) - name of system at the center of the radius
-        radius* (int) - radius of search sphere (in lightyears)
+        systemName* <string> - name of system at the center of the radius
+        radius* <int> - radius of search sphere (in lightyears)
 
-        showId (int) - (0 : False, 1 : True)
-        showCoordinates (int) - (0 : False, 1 : True)
-        showPermit (int) - (0 : False, 1 : True)
-        showInformation (int) - (0 : False, 1 : True)
-        showPrimaryStar (int) - (0 : False, 1 : True)
-        includeHidden (int) - (0 : False, 1 : True)
+        showId <int> - (0 : False, 1 : True)
+        showCoordinates <int> - (0 : False, 1 : True)
+        showPermit <int> - (0 : False, 1 : True)
+        showInformation <int> - (0 : False, 1 : True)
+        showPrimaryStar <int> - (0 : False, 1 : True)
+        includeHidden <int> - (0 : False, 1 : True)
 
-        showAllInfo (int) - 0 : False, 1 : True - whether to set all optional args to 1
+        showAllInfo <int> - 0 : False, 1 : True - whether to set all optional args to 1
 
-        returns (dict)
+        returns <dict>
 
         Queries EDSM to get information on systems within a sphere radius of given system
         """
