@@ -1,6 +1,7 @@
 import edsm.api as api
 
 # TODO: give each model a dumps() func 
+# TODO: Rework properties (remove update calls from them)
 # TODO: Logging
 class System():
     """
@@ -63,7 +64,9 @@ class Traffic():
         self._traffic = api.System.traffic(self.system_name)
 
     def dumpdict(self) -> dict:
-        return {'traffic' : self.traffic, 'breakdown' : self.breakdown}
+        # NOTE: using underscored vars here so as to avoid unwanted calls to self.update() during
+        # calls to self.dumpdict()
+        return {'traffic' : self._traffic['traffic'], 'breakdown' : self._traffic['breakdown']}
 
 
 class Stations():
@@ -109,6 +112,11 @@ class Stations():
         # list[Station(s) for s in stations['stations']]
         self._stations = list(map(lambda s: Station(s), stations['stations']))
 
+    def dumpdict(self):
+        # NOTE: Using
+        # list[station.__dict__ for station in stations]
+        return list(map(lambda s: s.dumpdict(), self._stations))
+
 class Station():
     """
     arg station_data* <dict>
@@ -143,7 +151,7 @@ class Station():
 
     @property
     def market(self) -> 'Market' or None:
-        if self.haveMarket and self._market == None:
+        if self._market == None and self.haveMarket:
             self.update_market()
 
         return self._market
@@ -151,6 +159,12 @@ class Station():
     def update_market(self):
         market_data = api.System.marketById(self.marketId)
         self._market = Market(market_data)
+
+    def dumpdict(self):
+        d = self.__dict__.copy()
+        del d['_market'] # deleting because held <Market> obj is not json serializable. 
+
+        return {'station' : d, 'market' : self._market.__dict__}
 
 
 class Market():

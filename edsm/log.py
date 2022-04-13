@@ -6,7 +6,7 @@ from typing import Any, Union
 
 import edsm.models as models
 import edsm.api as api
-import config
+import edsm.config as config
 
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
 # TODO: logging
@@ -39,7 +39,7 @@ class SystemsLogger():
         self.systems_data = None
 
     @property
-    def systems(self):
+    def systems(self) -> list[models.System]:
         if not self._systems:
             # list[models.System(d) for d in self.systems_data]
             self._systems = list(map(lambda d: models.System(d), self.systems_data))
@@ -48,7 +48,13 @@ class SystemsLogger():
 
     def parse_key(self, obj:models.System, key:Union[str, int]) -> Any:
         # some exceptions for grabbing data from managed <Traffic> and (TODO) <Stations> obj
+        # TODO: Add support for grabbing individual stations with keys formatted like "stations[Ray Hub]"
+
         if isinstance(obj.__dict__[key], models.Traffic):
+            return obj.__dict__[key].dumpdict()
+
+        # TODO: SHOULD WORK, BUT JUST A TEMPLATE
+        if isinstance(obj.__dict__[key], models.Stations):
             return obj.__dict__[key].dumpdict()
 
         return obj.__dict__[key]
@@ -61,12 +67,13 @@ class SystemsLogger():
 
     def update_by_keys(self):
         # update depending on which keys are needed
-        # TODO: Find a better way to toggle these.
+        # TODO: Find a better way to toggle these, maybe a dict with keys tied to update calls
         if 'traffic' in self.keys:
             self.update_traffic()
 
         if 'stations' in self.keys:
             self.update_stations()
+            self.update_stations_markets()
 
     def update_traffic(self):
         # Update all traffic objects using :config.MAX_THREADS: workers
@@ -79,6 +86,12 @@ class SystemsLogger():
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.stations.update)
+
+    def update_stations_markets(self):
+        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
+            for system in self.systems:
+                for station in system.stations.stations:
+                    executor.submit(station.update_market)
         
     def append_json(self, file, data):
         # expecting data from file to be parseable as json array
