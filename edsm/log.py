@@ -93,7 +93,7 @@ class SystemsLogger():
             # TODO: log exception (as warning)
             old_data = []
 
-        merged_data = json.dumps(old_data + data, indent=4) #TODO: magic, add DEFAULT_INDENT to config
+        merged_data = json.dumps(old_data + data, indent=config.JSON_INDENT)
 
         file_write = open(file, 'w')
         file_write.write(merged_data)

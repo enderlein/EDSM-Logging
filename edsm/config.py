@@ -7,3 +7,6 @@ DEFAULT_SLEEP = 1800
 
 # Defines 'User-Agent' in the header for all requests to EDSM API
 USER_AGENT = "TrafficHistory"
+
+# Defines number of spaces to use for indentation when writing to json. 
+JSON_INDENT = 4
