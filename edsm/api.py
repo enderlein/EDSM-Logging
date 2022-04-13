@@ -1,7 +1,7 @@
 import requests
 import json
 
-import config
+import edsm.config as config
 
 # TODO: properly handle 429 response (automatically show retry-after header)
 def query(url, params):
