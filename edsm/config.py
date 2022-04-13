@@ -5,5 +5,5 @@ MAX_THREADS = 20
 # default time that logger objects will sleep for (when not specified)
 DEFAULT_SLEEP = 1800
 
-# Defines 'User-Agent' in the header for all API requests
+# Defines 'User-Agent' in the header for all requests to EDSM API
 USER_AGENT = "TrafficHistory"
