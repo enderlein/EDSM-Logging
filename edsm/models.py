@@ -1,4 +1,4 @@
-import edsm
+import edsm.api as api
 
 # TODO: give each model a dumps() func 
 # TODO: Logging
@@ -60,7 +60,7 @@ class Traffic():
         return self._traffic['breakdown']
 
     def update(self) -> None:
-        self._traffic = edsm.System.traffic(self.system_name)
+        self._traffic = api.System.traffic(self.system_name)
 
     def dumpdict(self) -> dict:
         return {'traffic' : self.traffic, 'breakdown' : self.breakdown}
@@ -68,20 +68,20 @@ class Traffic():
 
 class Stations():
     """
-    arg system_name* <str> - name of system
-
-    property stations <list>
-    property stations_by_name <dict>
-
-    method get_station <Station or None>
-        arg station_name* <str>
-
-    method update
-
-    Models response from EDSM System/stations endpoint
+    Models response from EDSM System/stations endpoint.
     Direct downstream of <System> objects.
-    """
 
+    arg: system_name* <str> - name of system
+
+    property: stations <list>\ 
+    property: stations_by_name <dict>
+
+    method: get_station <Station or None>
+        arg: station_name* <str>
+
+    method: update
+    """
+    #TODO: consider changing all docstrings to this format ^
     def __init__(self, system_name):
         self.system_name = system_name
         self._stations = None
@@ -105,7 +105,7 @@ class Stations():
             return None
 
     def update(self):
-        stations = edsm.System.stations(self.system_name)
+        stations = api.System.stations(self.system_name)
         # list[Station(s) for s in stations['stations']]
         self._stations = list(map(lambda s: Station(s), stations['stations']))
 
@@ -149,7 +149,7 @@ class Station():
         return self._market
 
     def update_market(self):
-        market_data = edsm.System.marketById(self.marketId)
+        market_data = api.System.marketById(self.marketId)
         self._market = Market(market_data)
 
 

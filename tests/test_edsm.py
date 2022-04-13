@@ -1,7 +1,7 @@
 import unittest
 
-from edsm import System
-from edsm import Systems
+from edsm.api import System
+from edsm.api import Systems
 
 class SystemTest(unittest.TestCase):
     def test_traffic_Wawawa(self):

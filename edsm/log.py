@@ -2,9 +2,10 @@ import json
 import time
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Union
 
-import models
-import edsm
+import edsm.models as models
+import edsm.api as api
 import config
 
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
@@ -12,9 +13,22 @@ import config
 # TODO: Annotate
 
 # TODO: ABCs lol
-# TODO: reimplement delay arg, but with default
 class SystemsLogger():
-    def __init__(self, keys, delay=config.DEFAULT_SLEEP):
+    """
+    __init__
+        arg keys* <list> - keys to grab from <System> objects in self._systems when logging
+        arg delay <int> - amount of time to wait after collecting data. Defaults to config.DEFAULT_SLEEP
+
+    property systems <list> - list of systems being managed by <Self>
+
+    method parse_key(obj, key) <Any> - grabs given keys from given object
+        arg obj* <models.System>
+        arg key* <str or int>
+
+    method gather_keys <list>
+    method update_by_keys <None>
+    """
+    def __init__(self, keys:list, delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
         self.delay = delay
 
@@ -32,14 +46,14 @@ class SystemsLogger():
 
         return self._systems
 
-    def parse_key(self, obj, key):
-        # exceptions for grabbing data captured in <Traffic> and (TODO) <Stations> objects
+    def parse_key(self, obj:models.System, key:Union[str, int]) -> Any:
+        # some exceptions for grabbing data from managed <Traffic> and (TODO) <Stations> obj
         if isinstance(obj.__dict__[key], models.Traffic):
             return obj.__dict__[key].dumpdict()
 
         return obj.__dict__[key]
 
-    def gather_keys(self):
+    def gather_keys(self) -> list:
         # creates a list of dicts containing system data indicated by self.keys
 
         # list[dict{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
@@ -68,17 +82,18 @@ class SystemsLogger():
         
     def append_json(self, file, data):
         # expecting data from file to be parseable as json array
-        # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, TODO: narrow this exception)
+        # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
+        # should stop or throw warning if there is data but its not valid json. TODO: narrow second exception)
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
             file_read.close()
                 
-        except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
+        except (FileNotFoundError, json.decoder.JSONDecodeError): # as e:
             # TODO: log exception (as warning)
             old_data = []
 
-        merged_data = json.dumps(old_data + data, indent=4)
+        merged_data = json.dumps(old_data + data, indent=4) #TODO: magic, add DEFAULT_INDENT to config
 
         file_write = open(file, 'w')
         file_write.write(merged_data)
@@ -87,7 +102,7 @@ class SystemsLogger():
 
     def log(self):
         # Timestamps and dumps captured data as json to file :<self>.filename:
-
+        #TODO: reorganize above methods so that it's easier to follow program flow
         self.update_by_keys()
 
         timestamp = int(time.time())
@@ -96,6 +111,7 @@ class SystemsLogger():
         # so it's easier to implement switching to other output formats (i.e csv, idk)
         payload = self.gather_keys()
 
+        #TODO: map
         for system in payload:
             system['timestamp'] = timestamp
         
@@ -118,7 +134,7 @@ class SphereLogger(SystemsLogger):
         super().__init__(keys, delay=delay)
 
         self.filename = f"{center} - {radius}ly.json"
-        self.systems_data = edsm.Systems.sphere_systems(center, radius, showAllInfo=1)
+        self.systems_data = api.Systems.sphere_systems(center, radius, showAllInfo=1)
 """
 class SphereLogger():
     def __init__(self, sphere: traffic.TrafficSphere, sleep):

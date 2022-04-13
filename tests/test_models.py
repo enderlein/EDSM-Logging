@@ -1,6 +1,6 @@
 import unittest
 
-from models import Traffic
+from edsm.models import Traffic
 
 # TODO : Test update funcs (make sure objs are empty before update, + properly populated after update)
 
