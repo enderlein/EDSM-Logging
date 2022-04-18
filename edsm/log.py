@@ -113,7 +113,7 @@ class SystemsLogger():
             # TODO: log exception (as warning)
             old_data = []
 
-        merged_data = json.dumps(old_data + data, indent=config.JSON_INDENT)
+        merged_data = json.dumps(old_data + data)
 
         file_write = open(file, 'w')
         file_write.write(merged_data)
