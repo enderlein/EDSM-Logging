@@ -66,7 +66,8 @@ class Traffic():
     def dumpdict(self) -> dict:
         # NOTE: using underscored vars here so as to avoid unwanted calls to self.update() during
         # calls to self.dumpdict()
-        return {'traffic' : self._traffic['traffic'], 'breakdown' : self._traffic['breakdown']}
+        #TODO: # COND: TEMPORARY! Put the conditiional where it belongs!!
+        return {'traffic' : self._traffic['traffic'] if self._traffic else None, 'breakdown' : self._traffic['breakdown'] if self._traffic else None}
 
 
 class Stations():
@@ -79,10 +80,10 @@ class Stations():
     property: stations <list>\ 
     property: stations_by_name <dict>
 
-    method: get_station <Station or None>
+    method: get_station(station_name) <Station or None>
         arg: station_name* <str>
 
-    method: update
+    method: update <None>
     """
     #TODO: consider changing all docstrings to this format ^
     def __init__(self, system_name):
@@ -114,7 +115,7 @@ class Stations():
 
     def dumpdict(self):
         # NOTE: Using
-        # list[station.__dict__ for station in stations]
+        # list[station.dumpdict() for station in stations]
         return list(map(lambda s: s.dumpdict(), self._stations))
 
 class Station():
@@ -151,20 +152,22 @@ class Station():
 
     @property
     def market(self) -> 'Market' or None:
-        if self._market == None and self.haveMarket:
+        if self._market == None:
             self.update_market()
 
         return self._market
 
     def update_market(self):
-        market_data = api.System.marketById(self.marketId)
-        self._market = Market(market_data)
+        if self.haveMarket:
+            market_data = api.System.marketById(self.marketId)
+            self._market = Market(market_data)
 
     def dumpdict(self):
         d = self.__dict__.copy()
         del d['_market'] # deleting because held <Market> obj is not json serializable. 
-
-        return {'station' : d, 'market' : self._market.__dict__}
+        
+        #TODO: #COND: temporary, put the conditional where it belongs!!!!
+        return {'station' : d, 'market' : self._market.__dict__ if self._market else None}
 
 
 class Market():
