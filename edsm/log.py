@@ -11,9 +11,15 @@ import edsm.config as config
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
 # TODO: logging
 # TODO: Annotate
-# TODO: As of now, resulting .json files are kinda large, esp. if i wanna be using this to store years-worths of data
-# find ways to save on space, remove extranneous data, modify indent maybe?
+"""
+ TODO: As of now, resulting .json files are kinda large, find ways to save on space.
+
+        --- Too many timestamps - you're timestamping every single system obj, very redundant you should wrap each
+                                   response as an object.
+
+"""
 # TODO: ABCs lol
+# 
 class SystemsLogger():
     """
     __init__
@@ -29,7 +35,7 @@ class SystemsLogger():
     method gather_keys <list>
     method update_by_keys <None>
     """
-    def __init__(self, keys:list, delay:int=config.DEFAULT_SLEEP):
+    def __init__(self, keys:list[str], delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
         self.delay = delay
 
@@ -60,7 +66,7 @@ class SystemsLogger():
 
         return obj.__dict__[key]
 
-    def gather_keys(self) -> list:
+    def gather_keys(self) -> list[dict]:
         print("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
 
@@ -68,7 +74,7 @@ class SystemsLogger():
         return list(map(lambda system: dict(map(lambda k: (k, self.parse_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
-        print("Updating data by keys")
+        print("Running updates...")
         # update depending on which keys are needed
         # TODO: Find a better way to toggle these, maybe a dict with keys tied to update calls
         if 'traffic' in self.keys:
@@ -76,34 +82,40 @@ class SystemsLogger():
 
         if 'stations' in self.keys:
             self.update_stations()
-            
-            self.update_stations_markets()
+
+            if 'markets' in self.keys:
+                self.update_stations_markets()
+
+        else:
+            print("No updates to run")
 
     def update_traffic(self):
-        print("Updating traffic")
-        # Update all traffic objects using :config.MAX_THREADS: workers
+        print("Updating traffic...")
+        # Update all <Traffic> objects using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.traffic.update)
 
     def update_stations(self):
-        print("Updating stations")
-        # Update all stations objects using :config.MAX_THREADS: workers
+        print("Updating stations.....")
+        # Update all <Stations> objs (attr of <Systems> objs in self.systems) using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.stations.update)
 
     def update_stations_markets(self):
-        print("Updating station markets")
+        # Update data for all <Market> objs (attr of <Stations> objs) using :config.MAX_THREADS: workers
+        print("Updating station markets........")
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
             for system in self.systems:
                 for station in system.stations.stations:
                     executor.submit(station.update_market)
         
-    def append_json(self, file, data):
+    def append_json(self, file:str, data:list[dict]):
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
         # should stop or throw warning if there is data but its not valid json. TODO: narrow second exception)
+        print(f"Writing to {self.filename}...")
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
@@ -113,7 +125,7 @@ class SystemsLogger():
             # TODO: log exception (as warning)
             old_data = []
 
-        merged_data = json.dumps(old_data + data)
+        merged_data = json.dumps(old_data + data, indent=config.JSON_INDENT)
 
         file_write = open(file, 'w')
         file_write.write(merged_data)
@@ -130,7 +142,7 @@ class SystemsLogger():
         # TODO: Generalize as generate_json() method
         # so it's easier to implement switching to other output formats (i.e csv, idk)
         payload = self.gather_keys()
-        #TODO: map
+        #TODO: very redundant, you only need one timestamp.
         for system in payload:
             system['timestamp'] = timestamp
         
@@ -154,6 +166,8 @@ class SphereLogger(SystemsLogger):
 
         self.filename = f"{center} - {radius}ly.json"
         self.systems_data = api.Systems.sphere_systems(center, radius, showAllInfo=1)
+
+        # TODO: method for updating systems data!
 """
 class SphereLogger():
     def __init__(self, sphere: traffic.TrafficSphere, sleep):
