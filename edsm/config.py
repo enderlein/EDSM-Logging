@@ -2,11 +2,12 @@
 # default = 20
 MAX_THREADS = 20
 
-# default time that logger objects will sleep for (when not specified)
-DEFAULT_SLEEP = 1800
+# default time that logger objects will sleep for (in seconds)
+DEFAULT_SLEEP = 3600
 
 # Defines 'User-Agent' in the header for all requests to EDSM API
 USER_AGENT = "TrafficHistory"
 
 # Defines number of spaces to use for indentation when writing to json. 
-JSON_INDENT = 4
+# Set to None for no indent (smallest file size)
+JSON_INDENT = None
