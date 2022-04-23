@@ -5,21 +5,22 @@ import edsm.api as api
 # TODO: Logging
 class System():
     """
-    arg system_data* <dict>
+    Models individual system objects received from EDSM Systems/* endpoints
+
+    arg system_data* <dict> - a dict containing system data 
+    returned from call to edsm.api.Systems.*
     
-    property stations <Stations>
-    property traffic <Traffic>
+    property: stations <Stations>\ 
+    property: traffic <Traffic>
 
-    attr name <str>
-    attr id <int or None>
-    attr id64 <int or None>
-    attr coords <dict or None>
-    attr coordsLocked <bool or None>
-    attr requirePermit <bool or None>
-    attr information <dict or None>
-    attr primaryStar <dict or None>
-
-    Models an individual system
+    attr: name <str>\ 
+    attr: id <int or None>\ 
+    attr: id64 <int or None>\ 
+    attr: coords <dict or None>\ 
+    attr: coordsLocked <bool or None>\ 
+    attr: requirePermit <bool or None>\ 
+    attr: information <dict or None>\ 
+    attr: primaryStar <dict or None>
     """
     def __init__(self, system_data:dict):
         self.__dict__ = system_data
@@ -31,15 +32,15 @@ class System():
 
 class Traffic():
     """
-    arg system_name* <str> - name of system 
-    
-    property traffic <dict>
-    property breakdown <dict>
-
-    method update
-
     Models response from EDSM System/traffic endpoint.
-    Downstream of <System> objects.
+    Child of <System> objects.
+
+    arg: system_name* <str> - name of system 
+    
+    property: traffic <dict>\ 
+    property: breakdown <dict>
+
+    method: update <None> - populates 
     """
     def __init__(self, system_name:str):
         self.system_name = system_name
@@ -73,7 +74,7 @@ class Traffic():
 class Stations():
     """
     Models response from EDSM System/stations endpoint.
-    Direct downstream of <System> objects.
+    Direct child of <System> objects.
 
     arg: system_name* <str> - name of system
 
@@ -140,7 +141,7 @@ class Station():
     property market <Market or None>
 
     Models individual station objects from array received in response from EDSM System/stations endpoint.
-    Direct downstream of <Stations> objects.
+    Direct child of <Stations> objects.
     """
     def __init__(self, station_data:dict):
         self.__dict__ = station_data
@@ -183,7 +184,7 @@ class Market():
     attr commodities <dict>
 
     Models station market data.
-    Direct downstream of <Station> objects
+    Direct chiild of <Station> objects
     """
     def __init__(self, market_data):
         self.__dict__ = market_data
