@@ -45,6 +45,10 @@ class SystemsLogger():
         self.filename = f'{self}.json'
         self.systems_data = None
 
+        # TODO: add check_keys method to make sure provided keys are expected format
+        # NOTE: no data is saved if an exception is thrown in the middle of running updates (self.update_by_keys)
+        # so it is very important that provided keys are clean and parseable BEFORE running updates. 
+
     @property
     def systems(self) -> list[models.System]:
         if not self._systems:
@@ -53,25 +57,23 @@ class SystemsLogger():
 
         return self._systems
 
-    def parse_key(self, obj:models.System, key:Union[str, int]) -> Any:
+    def grab_key(self, obj:models.System, key:Union[str, int]) -> Any:
         # method for grabbing data from <models.System> objects 
         # TODO: Add support for grabbing individual stations with keys formatted like "stations[Ray Hub]"
 
-        if isinstance(obj.__dict__[key], models.Traffic):
-            return obj.__dict__[key].dumpdict()
+        excepts = (models.Traffic, models.Stations)
 
-        # TODO: SHOULD WORK, BUT JUST A TEMPLATE
-        if isinstance(obj.__dict__[key], models.Stations):
+        if isinstance(obj.__dict__[key], excepts):
             return obj.__dict__[key].dumpdict()
 
         return obj.__dict__[key]
 
-    def gather_keys(self) -> list[dict]:
+    def gather_by_keys(self) -> list[dict]:
         print("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
-
+        #TODO: implement passing keys as a model dict instead of as a list.
         # list[dict{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
-        return list(map(lambda system: dict(map(lambda k: (k, self.parse_key(system, k)), self.keys)), self.systems))
+        return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
         print("Running updates...")
@@ -82,9 +84,8 @@ class SystemsLogger():
 
         if 'stations' in self.keys:
             self.update_stations()
-
-            if 'markets' in self.keys:
-                self.update_stations_markets()
+            # TODO: make market updates optional somehow
+            self.update_stations_markets()
 
         else:
             print("No updates to run")
@@ -110,11 +111,22 @@ class SystemsLogger():
             for system in self.systems:
                 for station in system.stations.stations:
                     executor.submit(station.update_market)
-        
+
+    def generate_payload(self):
+        print("Generating payload")
+
+        timestamp = int(time.time())
+        data = self.gather_by_keys()
+
+        # TODO: Model as class?
+        return [{'timestamp' : timestamp, 'data' : data}]
+
+    
+    #TODO: Change name to specify that it is appending an array (maybe append_json_array())
     def append_json(self, file:str, data:list[dict]):
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
-        # should stop or throw warning if there is data but its not valid json. TODO: narrow second exception)
+        # should stop/throw warning if there is data but its not valid json. TODO: narrow second exception)
         print(f"Writing to {self.filename}...")
         try:
             file_read = open(file, 'r')
@@ -133,25 +145,18 @@ class SystemsLogger():
         file_write.close()
 
     def log(self):
-        print("Starting to gather. . .")
+        print("Starting routine...")
         # Timestamps and dumps captured data as json to file :<self>.filename:
         #TODO: reorganize above methods so that it's easier to follow program flow
         self.update_by_keys()
-        timestamp = int(time.time())
-
-        # TODO: Generalize as generate_json() method
-        # so it's easier to implement switching to other output formats (i.e csv, idk)
-        payload = self.gather_keys()
-        #TODO: very redundant, you only need one timestamp.
-        for system in payload:
-            system['timestamp'] = timestamp
         
+        payload = self.generate_payload()
         self.append_json(self.filename, payload)
     
     def sleep(self):
         # TODO: Replace print with logging event
         sleep_time = time.strftime("%H:%M:%S", time.localtime())
-        print(f"{self} :Sleeping: for {self.delay} seconds (since {sleep_time})")
+        print(f"{self} :SLEEPING: for {self.delay} seconds (since {sleep_time})")
         time.sleep(self.delay)
 
     def run(self):
