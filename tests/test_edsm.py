@@ -135,6 +135,7 @@ class SystemTest(unittest.TestCase):
         self.assertIn('haveShipyard', station)
         self.assertIn('haveOutfitting', station)
         self.assertIn('otherServices', station)
+        # TODO:FIX controllingFaction not found in <station>
         self.assertIn('controllingFaction', station)
         self.assertIn('updateTime', station)
 

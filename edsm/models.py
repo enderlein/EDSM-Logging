@@ -167,7 +167,8 @@ class Station():
         d = self.__dict__.copy()
         del d['_market'] # deleting because held <Market> obj is not json serializable. 
         
-        #TODO: #COND: temporary, put the conditional where it belongs!!!!
+        #TODO: I wanted to re-format this conditional here. I don't remember how I wanted to do that, though
+        # or why
         return {'station' : d, 'market' : self._market.__dict__ if self._market else None}
 
 
