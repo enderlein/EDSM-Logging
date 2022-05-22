@@ -3,6 +3,13 @@ import edsm.api as api
 # TODO: give each model a dumps() func 
 # TODO: Rework properties (remove update calls from them)
 # TODO: Logging
+
+# TODO: REDO System model. .traffic, .stations etc should return respective data
+    # as opposed to the container objects for that data
+    
+# TODO: as of now just manually formatting models to remove redundant attributes from json output
+# find a better way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
+
 class System():
     """
     Models individual system objects received from EDSM Systems/* endpoints
@@ -67,8 +74,13 @@ class Traffic():
     def dumpdict(self) -> dict:
         # NOTE: using underscored vars here so as to avoid unwanted calls to self.update() during
         # calls to self.dumpdict()
-        #TODO: # COND: TEMPORARY! Put the conditiional where it belongs!!
-        return {'traffic' : self._traffic['traffic'] if self._traffic else None, 'breakdown' : self._traffic['breakdown'] if self._traffic else None}
+
+        #TODO: not clean at all. dumped dict should be original dict with unneeded elements removed,
+        # as opposed to new dict with arbitrary keys (as done here)
+        if self._traffic:
+            return {'traffic' : self._traffic['traffic'], 'breakdown' : self._traffic['breakdown']}
+
+        return None
 
 
 class Stations():
