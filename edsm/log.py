@@ -11,13 +11,10 @@ import edsm.config as config
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
 # TODO: logging
 # TODO: Annotate
-"""
- TODO: As of now, resulting .json files are kinda large, find ways to save on space.
 
-        --- Too many timestamps - you're timestamping every single system obj, very redundant you should wrap each
-                                   response as an object.
+# TODO: Find patterns to analyze. How can we know which systems have the most player activity?
+#       Log a bunch of data, make some guesses, cross-reference with nightlies from same day.
 
-"""
 # TODO: ABCs lol
 # 
 class SystemsLogger():
@@ -72,7 +69,7 @@ class SystemsLogger():
         print("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
         #TODO: implement passing keys as a model dict instead of as a list.
-        # list[dict{k : self.parse_key(system, k) for k in self.keys} for system in self.systems]
+        # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
@@ -112,14 +109,16 @@ class SystemsLogger():
                 for station in system.stations.stations:
                     executor.submit(station.update_market)
 
-    def generate_payload(self):
-        print("Generating payload")
+    def get_payload(self):
+        # Return list containing dict containing payload (systems data and timestamp)
+        # Returned in this format for the sake of convienience when calling self.append_json()
+        print("Building payload")
 
         timestamp = int(time.time())
-        data = self.gather_by_keys()
+        system_data = self.gather_by_keys()
 
         # TODO: Model as class?
-        return [{'timestamp' : timestamp, 'data' : data}]
+        return [{'timestamp' : timestamp, 'systems' : system_data}]
 
     
     #TODO: Change name to specify that it is appending an array (maybe append_json_array())
@@ -150,7 +149,7 @@ class SystemsLogger():
         #TODO: reorganize above methods so that it's easier to follow program flow
         self.update_by_keys()
         
-        payload = self.generate_payload()
+        payload = self.get_payload()
         self.append_json(self.filename, payload)
     
     def sleep(self):
