@@ -9,5 +9,5 @@ DEFAULT_SLEEP = 3600
 USER_AGENT = "TrafficHistory"
 
 # Defines number of spaces to use for indentation when writing to json. 
-# Set to None for no indent (smallest file size)
+# Set to None for no indent (smaller file size)
 JSON_INDENT = None
