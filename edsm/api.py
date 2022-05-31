@@ -3,7 +3,7 @@ import json
 
 import edsm.config as config
 
-# TODO: properly handle 429 response (automatically show retry-after header)
+# TODO: raise_as_status !!!
 def query(url, params):
     headers = {'User-Agent' : config.USER_AGENT}
     r = requests.get(url, params = params, headers = headers)

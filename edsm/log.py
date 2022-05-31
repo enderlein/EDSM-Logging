@@ -8,12 +8,19 @@ import edsm.models as models
 import edsm.api as api
 import edsm.config as config
 
-# TODO: Import config with from calls (not that big a module, but less overhead anyways)
-# TODO: logging
-# TODO: Annotate
+"""
+For storing timstamped system data.
 
-# TODO: Find patterns to analyze. How can we know which systems have the most player activity?
-#       Log a bunch of data, make some guesses, cross-reference with nightlies from same day.
+Designed around collecting data to help spot trends in market and traffic data 
+based on the powerplay cycle (regular edsm.net traffic data only goes back one week, market data only one day) 
+"""
+
+# TODO: Change all maps with lambdas to regular comprehensions (no time saved)
+
+# TODO: Scheduling
+# TODO: Import config with from calls (not that big a module, but less overhead anyways)
+# TODO: debug logging
+# TODO: Annotate
 
 # TODO: ABCs lol
 # 
@@ -70,6 +77,7 @@ class SystemsLogger():
         # creates a list of dicts containing system data indicated by self.keys
         #TODO: implement passing keys as a model dict instead of as a list.
         # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
+        #TODO: just do the comprehension, lambda kills any time saved
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
