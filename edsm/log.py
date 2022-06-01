@@ -2,6 +2,7 @@ import json
 import time
 
 from concurrent.futures import ThreadPoolExecutor
+from types import MethodType
 from typing import Any, Union
 
 import edsm.models as models
@@ -63,8 +64,9 @@ class SystemsLogger():
 
     def grab_key(self, obj:models.System, key:Union[str, int]) -> Any:
         # method for grabbing data from <models.System> objects 
-        # TODO: Add support for grabbing individual stations with keys formatted like "stations[Ray Hub]"
+        # TODO: Add support for grabbing individual stations with keys formatted like "stations:Ray Hub"
 
+        # TODO: make this assignment static
         excepts = (models.Traffic, models.Stations)
 
         if isinstance(obj.__dict__[key], excepts):
@@ -82,18 +84,27 @@ class SystemsLogger():
 
     def update_by_keys(self):
         print("Running updates...")
-        # update depending on which keys are needed
-        # TODO: Find a better way to toggle these, maybe a dict with keys tied to update calls
-        if 'traffic' in self.keys:
-            self.update_traffic()
+        # update depending on which keys are provided
 
-        if 'stations' in self.keys:
-            self.update_stations()
-            # TODO: make market updates optional somehow
-            self.update_stations_markets()
+        # TODO: make this assignment static
+        binding_dict = {
+            'traffic' : self.update_traffic,
+            'stations' : [self.update_stations, self.update_stations_markets]
+        }
 
-        else:
+        if not any([key in binding_dict.keys() for key in self.keys]):
             print("No updates to run")
+            
+        else:
+            for key in self.keys:
+                binding = binding_dict.get(key)
+
+                if isinstance(binding, MethodType):
+                    binding()
+
+                elif isinstance(binding, list):
+                    for func in binding:
+                        func()
 
     def update_traffic(self):
         print("Updating traffic...")
@@ -117,7 +128,7 @@ class SystemsLogger():
                 for station in system.stations.stations:
                     executor.submit(station.update_market)
 
-    def get_payload(self):
+    def get_payload(self) -> list[dict]:
         # Return list containing dict containing payload (systems data and timestamp)
         # Returned in this format for the sake of convienience when calling self.append_json()
         print("Building payload")
