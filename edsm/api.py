@@ -1,23 +1,28 @@
 import requests
 import json
-
 import edsm.config as config
 
-# TODO: raise_as_status !!!
 def query(url, params):
     headers = {'User-Agent' : config.USER_AGENT}
+
     r = requests.get(url, params = params, headers = headers)
 
-    if r.status_code == 200:
-        return json.loads(r.text)
-
-    else:
-        # Abrupt, only for now
-        # TODO: just log a warning and return empty dict
-        raise Exception(f'A request has returned with a response code other than 200\n' 
-        + f'url={url}\nparams={params}\n'
-        + f'status_code={r.status_code} -- "{r.reason}"\n'
-        + f'headers={r.headers}')
+    # TODO: exceptions raised in sub-threads don't get raised to the caller thread. 
+    # This means HTTPErrors that happen here sometimes get skipped over (silently), idc enough to fix it now,
+    # here's a stackoverflow link for future reference.
+    # https://stackoverflow.com/questions/2829329/catch-a-threads-exception-in-the-caller-thread
+    r.raise_for_status()
+    return json.loads(r.text)
+    #if r.status_code == 200:
+    #    return json.loads(r.text)
+#
+    #else:
+    #    # Abrupt, only for now
+    #    # TODO: just log a warning and return empty dict
+    #    raise Exception(f'A request has returned with a response code other than 200\n' 
+    #    + f'url={url}\nparams={params}\n'
+    #    + f'status_code={r.status_code} -- "{r.reason}"\n'
+    #    + f'headers={r.headers}')
 
 
 class System():
@@ -34,7 +39,6 @@ class System():
         """
         endpoint = "traffic"
         params = {'systemName' : systemName}
-        
         return query(self.url_base + endpoint, params)
 
     @classmethod
