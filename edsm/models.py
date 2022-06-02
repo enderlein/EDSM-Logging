@@ -53,7 +53,7 @@ class Traffic():
         self.system_name = system_name
         self._traffic = None
 
-    
+    # TODO: remove these properties, no longer needed
     @property
     def traffic(self) -> dict:
         if self._traffic == None:
