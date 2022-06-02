@@ -1,7 +1,9 @@
 import json
 import time
+import logging
 
 from concurrent.futures import ThreadPoolExecutor
+from logging import INFO, DEBUG
 from types import MethodType
 from typing import Any, Union
 
@@ -20,11 +22,13 @@ based on the powerplay cycle (regular edsm.net traffic data only goes back one w
 
 # TODO: Scheduling
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
-# TODO: debug logging
 # TODO: Annotate
 
 # TODO: ABCs lol
 # 
+
+logging.basicConfig(level=INFO)
+
 class SystemsLogger():
     """
     __init__
@@ -75,7 +79,7 @@ class SystemsLogger():
         return obj.__dict__[key]
 
     def gather_by_keys(self) -> list[dict]:
-        print("Gathering data by keys")
+        logging.info("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
         #TODO: implement passing keys as a model dict instead of as a list.
         # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
@@ -83,7 +87,7 @@ class SystemsLogger():
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
-        print("Running updates...")
+        logging.info("Running updates...")
         # update depending on which keys are provided
 
         # TODO: make this assignment static
@@ -93,7 +97,7 @@ class SystemsLogger():
         }
 
         if not any([key in binding_dict.keys() for key in self.keys]):
-            print("No updates to run")
+            logging.info("No updates to run")
             
         else:
             for key in self.keys:
@@ -107,14 +111,14 @@ class SystemsLogger():
                         func()
 
     def update_traffic(self):
-        print("Updating traffic...")
+        logging.info("Updating traffic...")
         # Update all <Traffic> objects using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
                 executor.submit(system.traffic.update)
 
     def update_stations(self):
-        print("Updating stations.....")
+        logging.info("Updating stations.....")
         # Update all <Stations> objs (attr of <Systems> objs in self.systems) using :config.MAX_THREADS: workers
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             for system in self.systems:
@@ -122,7 +126,7 @@ class SystemsLogger():
 
     def update_stations_markets(self):
         # Update data for all <Market> objs (attr of <Stations> objs) using :config.MAX_THREADS: workers
-        print("Updating station markets........")
+        logging.info("Updating station markets........")
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
             for system in self.systems:
                 for station in system.stations.stations:
@@ -131,7 +135,7 @@ class SystemsLogger():
     def get_payload(self) -> list[dict]:
         # Return list containing dict containing payload (systems data and timestamp)
         # Returned in this format for the sake of convienience when calling self.append_json()
-        print("Building payload")
+        logging.info("Building payload")
 
         timestamp = int(time.time())
         system_data = self.gather_by_keys()
@@ -145,7 +149,7 @@ class SystemsLogger():
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
         # should stop/throw warning if there is data but its not valid json. TODO: narrow second exception)
-        print(f"Writing to {self.filename}...")
+        logging.info(f"Writing payload to {self.filename}...")
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
@@ -163,7 +167,8 @@ class SystemsLogger():
         file_write.close()
 
     def log(self):
-        print("Starting routine...")
+        logging.info("Starting log routine...")
+        # TODO: change function name, 'log' might be confusing
         # Timestamps and dumps captured data as json to file :<self>.filename:
         #TODO: reorganize above methods so that it's easier to follow program flow
         self.update_by_keys()
@@ -172,9 +177,9 @@ class SystemsLogger():
         self.append_json(self.filename, payload)
     
     def sleep(self):
-        # TODO: Replace print with logging event
         sleep_time = time.strftime("%H:%M:%S", time.localtime())
-        print(f"{self} :SLEEPING: for {self.delay} seconds (since {sleep_time})")
+        logging.info(f"{self} :SLEEPING: for {self.delay} seconds (since {sleep_time})")
+
         time.sleep(self.delay)
 
     def run(self):
