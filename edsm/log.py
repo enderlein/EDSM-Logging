@@ -2,7 +2,8 @@ import json
 import time
 import logging
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait, Future
+
 from logging import INFO, DEBUG
 from types import MethodType
 from typing import Any, Union
@@ -10,6 +11,7 @@ from typing import Any, Union
 import edsm.models as models
 import edsm.api as api
 import edsm.config as config
+
 
 """
 For storing timstamped system data.
@@ -28,6 +30,22 @@ based on the powerplay cycle (regular edsm.net traffic data only goes back one w
 # 
 
 logging.basicConfig(level=INFO)
+
+def submit_updates(executor:ThreadPoolExecutor, tasks:list[MethodType]):
+    futures = []
+    for task in tasks:
+        future = executor.submit(task)
+        futures.append(future)
+
+    return futures
+
+def check_futures(futures:list[Future]):
+    wait(futures)
+    
+    for future in futures:
+        if future.exception() != None:
+            raise future.exception()
+
 
 class SystemsLogger():
     """
@@ -87,7 +105,7 @@ class SystemsLogger():
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
-        logging.info("Running updates...")
+        logging.info("Running updates")
         # update depending on which keys are provided
 
         # TODO: make this assignment static
@@ -111,29 +129,37 @@ class SystemsLogger():
                         func()
 
     def update_traffic(self):
-        logging.info("Updating traffic...")
-        # Update all <Traffic> objects using :config.MAX_THREADS: workers
+        """Update all <Traffic> objects using :config.MAX_THREADS: workers"""
+        logging.info("Updating traffic")
+        
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
-            for system in self.systems:
-                executor.submit(system.traffic.update)
+            futures = submit_updates(executor, [system.traffic.update for system in self.systems])
+            check_futures(futures)
 
     def update_stations(self):
-        logging.info("Updating stations.....")
-        # Update all <Stations> objs (attr of <Systems> objs in self.systems) using :config.MAX_THREADS: workers
+        """Update all <Stations> objs (attr of <Systems> objs in self.systems) using :config.MAX_THREADS: workers"""
+        logging.info("Updating stations (may take a while)")     
+
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
-            for system in self.systems:
-                executor.submit(system.stations.update)
+            futures = submit_updates(executor, [system.stations.update for system in self.systems])
+            check_futures(futures)
 
     def update_stations_markets(self):
-        # Update data for all <Market> objs (attr of <Stations> objs) using :config.MAX_THREADS: workers
-        logging.info("Updating station markets........")
+        """Update data for all <Market> objs (attr of <Stations> objs) using :config.MAX_THREADS: workers"""
+        logging.info("Updating station markets (may take a while)")
+
         with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
+            tasks = []
             for system in self.systems:
                 for station in system.stations.stations:
-                    executor.submit(station.update_market)
+                    tasks.append(station.update_market)
+
+            futures = submit_updates(executor, tasks)
+            check_futures(futures)
 
     def get_payload(self) -> list[dict]:
-        # Return list containing dict containing payload (systems data and timestamp)
+        """ Return list containing dicts containing payload (timstamp + systems data)"""
+
         # Returned in this format for the sake of convienience when calling self.append_json()
         logging.info("Building payload")
 
@@ -149,7 +175,7 @@ class SystemsLogger():
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
         # should stop/throw warning if there is data but its not valid json. TODO: narrow second exception)
-        logging.info(f"Writing payload to {self.filename}...")
+        logging.info(f"Writing payload to file: \'{self.filename}\'")
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
