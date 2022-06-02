@@ -108,6 +108,7 @@ class Stations():
         # dict{s.name : s for s in self.stations}
         return dict(map(lambda s: (s.name, s), self.stations))
 
+    # TODO: rename to 'list' (so that calls are formed like system.stations.list)
     @property
     def stations(self) -> list:
         if self._stations == None:
