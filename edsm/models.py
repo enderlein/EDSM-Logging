@@ -4,8 +4,7 @@ import edsm.api as api
 # TODO: Rework properties (remove update calls from them)
 # TODO: Logging
 
-# TODO: REDO System model. .traffic, .stations etc should return respective data
-    # as opposed to the container objects for that data
+# TODO: REDO All of these models
     
 # TODO: as of now just manually formatting models to remove redundant attributes from json output
 # find a better way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
