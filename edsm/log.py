@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, Future
 
 from logging import INFO, DEBUG
 from types import MethodType
-from typing import Any, Union
+from typing import Any, Callable, Union
 
 import edsm.models as models
 import edsm.api as api
@@ -31,7 +31,7 @@ based on the powerplay cycle (regular edsm.net traffic data only goes back one w
 
 logging.basicConfig(level=INFO)
 
-def submit_updates(executor:ThreadPoolExecutor, tasks:list[MethodType]):
+def submit_updates(executor:ThreadPoolExecutor, tasks:list[Callable[[None], None]]):
     futures = []
     for task in tasks:
         future = executor.submit(task)
@@ -43,7 +43,7 @@ def check_futures(futures:list[Future]):
     wait(futures)
     
     for future in futures:
-        if future.exception() != None:
+        if future.exception():
             raise future.exception()
 
 
@@ -62,6 +62,8 @@ class SystemsLogger():
     method gather_keys <list>
     method update_by_keys <None>
     """
+
+    
     def __init__(self, keys:list[str], delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
         self.delay = delay
@@ -72,13 +74,20 @@ class SystemsLogger():
         self.filename = f'{self}.json'
         self.systems_data = None
 
+        self.keybind_dict = {
+            'traffic' : self.update_traffic,
+            'stations' : [self.update_stations, self.update_stations_markets]
+        }
+
         # TODO: add check_keys method to make sure provided keys are expected format
         # NOTE: no data is saved if an exception is thrown in the middle of running updates (self.update_by_keys)
         # so it is very important that provided keys are clean and parseable BEFORE running updates. 
 
+    
     @property
     def systems(self) -> list[models.System]:
         if not self._systems:
+            # TODO: change to regular comprehension
             # list[models.System(d) for d in self.systems_data]
             self._systems = list(map(lambda d: models.System(d), self.systems_data))
 
@@ -86,7 +95,12 @@ class SystemsLogger():
 
     def grab_key(self, obj:models.System, key:Union[str, int]) -> Any:
         # method for grabbing data from <models.System> objects 
-        # TODO: Add support for grabbing individual stations with keys formatted like "stations:Ray Hub"
+        
+        # TODO: This method belongs in the respective models (models.py) themselves, very
+        # roundabout to do it up here. Move this. (maybe give each model its own .parse_key() method,
+        # so that on this end, we could just feed them the keys, without having to do all this filtering)
+        # TODO: Add support for grabbing individual stations with keys formatted like "stations:Ray Hub" (see above,  
+        # would make more sense to give that functionality to the <Stations> model itself)
 
         # TODO: make this assignment static
         excepts = (models.Traffic, models.Stations)
@@ -96,6 +110,7 @@ class SystemsLogger():
 
         return obj.__dict__[key]
 
+    # TODO: rename, 'filter' is more accurate than 'gather'
     def gather_by_keys(self) -> list[dict]:
         logging.info("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
@@ -107,19 +122,12 @@ class SystemsLogger():
     def update_by_keys(self):
         logging.info("Running updates")
         # update depending on which keys are provided
-
-        # TODO: make this assignment static
-        binding_dict = {
-            'traffic' : self.update_traffic,
-            'stations' : [self.update_stations, self.update_stations_markets]
-        }
-
-        if not any([key in binding_dict.keys() for key in self.keys]):
+        if not any([key in self.keybind_dict.keys() for key in self.keys]):
             logging.info("No updates to run")
             
         else:
             for key in self.keys:
-                binding = binding_dict.get(key)
+                binding = self.keybind_dict.get(key)
 
                 if isinstance(binding, MethodType):
                     binding()
