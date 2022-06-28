@@ -98,7 +98,7 @@ class Systems():
         systemName* <string> - name of system
 
         showId <int> - (0 : False, 1 : True)
-        showCoordinates <int> - (0 : False, 1 : True)
+        showCoordinates <int> - (0 : False, 1 : True) TODO: 0,1 elaboration not needed
         showPermit <int> - (0 : False, 1 : True)
         showInformation <int> - (0 : False, 1 : True)
         showPrimaryStar <int> - (0 : False, 1 : True)

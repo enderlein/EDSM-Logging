@@ -1,13 +1,11 @@
 import edsm.api as api
 
-# TODO: give each model a dumps() func 
-# TODO: Rework properties (remove update calls from them)
 # TODO: Logging
 
 # TODO: REDO All of these models
     
 # TODO: as of now just manually formatting models to remove redundant attributes from json output
-# find a better way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
+# find a more automatic way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
 
 class System():
     """
@@ -17,7 +15,7 @@ class System():
     returned from call to edsm.api.Systems.*
     
     property: stations <Stations>\ 
-    property: traffic <Traffic>
+    property: traffic <Traffic> TODO: update this docstring 
 
     attr: name <str>\ 
     attr: id <int or None>\ 
@@ -32,6 +30,7 @@ class System():
         self.__dict__ = system_data
 
         # NOTE: depends on assignment to self.__dict__ to define self.name
+        # TODO: conditionals for assigning these???
         self.stations = Stations(self.name)
         self.traffic = Traffic(self.name)
 
@@ -70,8 +69,8 @@ class Traffic():
     def update(self) -> None:
         self._traffic = api.System.traffic(self.system_name)
 
-    def dumpdict(self) -> dict:
-        # NOTE: using underscored vars here so as to avoid unwanted calls to self.update() during
+    def dumpdict(self) -> dict: #TODO: rename to 'data'
+        # NOTE: using underscored vars here to avoid unwanted calls to self.update() during
         # calls to self.dumpdict()
 
         #TODO: not clean at all. dumped dict should be original dict with unneeded elements removed,
@@ -123,12 +122,12 @@ class Stations():
 
     def update(self):
         stations = api.System.stations(self.system_name)
-        # list[Station(s) for s in stations['stations']]
+        # list[Station(s) for s in stations['stations']] # TODO
         self._stations = list(map(lambda s: Station(s), stations['stations']))
 
-    def dumpdict(self):
+    def dumpdict(self): # TODO: rename to 'data' 
         # NOTE: Using
-        # list[station.dumpdict() for station in stations]
+        # list[station.dumpdict() for station in stations] # TODO
         return list(map(lambda s: s.dumpdict(), self._stations))
 
 class Station():
@@ -175,7 +174,7 @@ class Station():
             market_data = api.System.marketById(self.marketId)
             self._market = Market(market_data)
 
-    def dumpdict(self):
+    def dumpdict(self): # TODO: rename to 'data'
         d = self.__dict__.copy()
         del d['_market'] # deleting because held <Market> obj is not json serializable. 
         

@@ -114,7 +114,7 @@ class SystemsLogger():
     def gather_by_keys(self) -> list[dict]:
         logging.info("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
-        #TODO: implement passing keys as a model dict instead of as a list.
+
         # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
         #TODO: just do the comprehension, lambda kills any time saved
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
