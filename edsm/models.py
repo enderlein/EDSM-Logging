@@ -7,15 +7,19 @@ import edsm.api as api
 # TODO: as of now just manually formatting models to remove redundant attributes from json output
 # find a more automatic way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
 
+# TODO: work parse_key method into Stations and Traffic model
 class System():
     """
     Models individual system objects received from EDSM Systems/* endpoints
 
-    arg system_data* <dict> - a dict containing system data 
+    arg: system_data* <dict> - a dict containing system data 
     returned from call to edsm.api.Systems.*
     
     property: stations <Stations>\ 
     property: traffic <Traffic> TODO: update this docstring 
+
+    method: get_keys (keys) <dict>
+        arg: keys* <list<dict>>
 
     attr: name <str>\ 
     attr: id <int or None>\ 
@@ -34,6 +38,9 @@ class System():
         self.stations = Stations(self.name)
         self.traffic = Traffic(self.name)
 
+    def get_keys(self, keys: list[str]):
+        return {key : self.__dict__[key] for key in keys}
+
 
 class Traffic():
     """
@@ -41,9 +48,6 @@ class Traffic():
     Child of <System> objects.
 
     arg: system_name* <str> - name of system 
-    
-    property: traffic <dict>\ 
-    property: breakdown <dict>
 
     method: update <None> - populates 
     """
@@ -51,34 +55,19 @@ class Traffic():
         self.system_name = system_name
         self._traffic = None
 
-    # TODO: remove these properties, no longer needed
-    @property
-    def traffic(self) -> dict:
-        if self._traffic == None:
-            self.update()
-
-        return self._traffic['traffic']
-
-    @property
-    def breakdown(self) -> dict:
-        if self._traffic == None:
-            self.update()
-
-        return self._traffic['breakdown']
-
     def update(self) -> None:
         self._traffic = api.System.traffic(self.system_name)
 
-    def dumpdict(self) -> dict: #TODO: rename to 'data'
+    def data(self) -> dict:
         # NOTE: using underscored vars here to avoid unwanted calls to self.update() during
-        # calls to self.dumpdict()
-
-        #TODO: not clean at all. dumped dict should be original dict with unneeded elements removed,
-        # as opposed to new dict with arbitrary keys (as done here)
+        # calls to self.data()
         if self._traffic:
             return {'traffic' : self._traffic['traffic'], 'breakdown' : self._traffic['breakdown']}
 
         return None
+
+    def get_keys(self, keys: list[str]): # TODO: raises TypeError when traffic data hasn't been updated. Let user know they need to update first.
+        return {key : self.data()[key] for key in keys}
 
 
 class Stations():
@@ -96,11 +85,12 @@ class Stations():
 
     method: update <None>
     """
-    #TODO: consider changing all docstrings to this format ^
     def __init__(self, system_name):
         self.system_name = system_name
         self._stations = None
 
+    # TODO: consider removing this entire model, stations can just be wrapped in a list
+    # and search logic can be handled by System object
     @property
     def stations_by_name(self) -> dict:
         # dict{s.name : s for s in self.stations}
@@ -125,10 +115,10 @@ class Stations():
         # list[Station(s) for s in stations['stations']] # TODO
         self._stations = list(map(lambda s: Station(s), stations['stations']))
 
-    def dumpdict(self): # TODO: rename to 'data' 
+    def data(self): # TODO: rename to 'data' 
         # NOTE: Using
-        # list[station.dumpdict() for station in stations] # TODO
-        return list(map(lambda s: s.dumpdict(), self._stations))
+        # list[station.data() for station in stations] # TODO
+        return list(map(lambda s: s.data(), self._stations))
 
 class Station():
     """
@@ -159,7 +149,7 @@ class Station():
         self._market = None 
 
     def __repr__(self):
-        # NOTE: depends on assignment to self.__dict__ to define self.name and self.haveMarket
+        # NOTE: depends on above assignment to self.__dict__ to define self.name and self.haveMarket
         return f'<{self.__module__}.{self.__class__.__name__}(name="{self.name}", haveMarket={self.haveMarket})>'
 
     @property
@@ -174,7 +164,7 @@ class Station():
             market_data = api.System.marketById(self.marketId)
             self._market = Market(market_data)
 
-    def dumpdict(self): # TODO: rename to 'data'
+    def data(self): # TODO: rename to 'data'
         d = self.__dict__.copy()
         del d['_market'] # deleting because held <Market> obj is not json serializable. 
         
