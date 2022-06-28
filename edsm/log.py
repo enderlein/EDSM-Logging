@@ -99,14 +99,17 @@ class SystemsLogger():
         # TODO: This method belongs in the respective models (models.py) themselves, very
         # roundabout to do it up here. Move this. (maybe give each model its own .parse_key() method,
         # so that on this end, we could just feed them the keys, without having to do all this filtering)
-        # TODO: Add support for grabbing individual stations with keys formatted like "stations:Ray Hub" (see above,  
-        # would make more sense to give that functionality to the <Stations> model itself)
 
-        # TODO: make this assignment static
+        #NOTE: next few commits will have keys being parsed by their respective models instead of here.
+        #NOTE: the expected format for self.keys will also be changing
+        #NOTE: following is example of new expected format for receiving keys.
+        example = {'system' : ['name', 'id', 'coords'], 'traffic' : ['traffic', 'breakdown'], 'stations' : ['markets']}
+
+        # TODO: make this assignment static (to be fixed by above)
         excepts = (models.Traffic, models.Stations)
 
         if isinstance(obj.__dict__[key], excepts):
-            return obj.__dict__[key].dumpdict()
+            return obj.__dict__[key].data() # TODO: editors cant auto refactor vague bits like this, fix
 
         return obj.__dict__[key]
 
@@ -117,6 +120,9 @@ class SystemsLogger():
 
         # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
         #TODO: just do the comprehension, lambda kills any time saved
+        #NEW: for item in model_dict.items():
+        #       obj = keybinds[item[0]]
+        #       obj.get_keys(item[1])
         return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
 
     def update_by_keys(self):
