@@ -2,12 +2,11 @@ import edsm.api as api
 
 # TODO: Logging
 
-# TODO: REDO All of these models
-    
-# TODO: as of now just manually formatting models to remove redundant attributes from json output
-# find a more automatic way to do this (remove values from lower-nested objs if identical value found in higher-nested obj?)
+# NOTE: 'json_dump' methods are meant to return a json-serializable representation of each model
+# NOTE: 'get_keys' methods are meant allow getting json-serializable attr with given keys 
 
-# TODO: work parse_key method into Stations and Traffic model
+# TODO: automate getting rid of redundancies in output (i.e. system name is listed in system, traffic, and station data)
+
 class System():
     """
     Models individual system objects received from EDSM Systems/* endpoints
@@ -34,7 +33,7 @@ class System():
         self.__dict__ = system_data
 
         # NOTE: depends on assignment to self.__dict__ to define self.name
-        # TODO: conditionals for assigning these???
+        # TODO: conditionals for assigning these??? so we're not wasting time creating these if theyre not needed
         self.stations = Stations(self.name)
         self.traffic = Traffic(self.name)
 
@@ -50,24 +49,26 @@ class Traffic():
     arg: system_name* <str> - name of system 
 
     method: update <None> - populates 
+
+    property: daat
     """
     def __init__(self, system_name:str):
         self.system_name = system_name
-        self._traffic = None
+        self.traffic = None
 
     def update(self) -> None:
-        self._traffic = api.System.traffic(self.system_name)
+        self.traffic = api.System.traffic(self.system_name)
 
-    def data(self) -> dict:
+    def json_dump(self) -> dict:
         # NOTE: using underscored vars here to avoid unwanted calls to self.update() during
         # calls to self.data()
-        if self._traffic:
-            return {'traffic' : self._traffic['traffic'], 'breakdown' : self._traffic['breakdown']}
+        if self.traffic:
+            return {'traffic' : self.traffic['traffic'], 'breakdown' : self.traffic['breakdown']}
 
         return None
 
     def get_keys(self, keys: list[str]): # TODO: raises TypeError when traffic data hasn't been updated. Let user know they need to update first.
-        return {key : self.data()[key] for key in keys}
+        return {key : self.json_dump()[key] for key in keys}
 
 
 class Stations():
@@ -87,38 +88,31 @@ class Stations():
     """
     def __init__(self, system_name):
         self.system_name = system_name
-        self._stations = None
+        self.stations = None
 
-    # TODO: consider removing this entire model, stations can just be wrapped in a list
-    # and search logic can be handled by System object
-    @property
-    def stations_by_name(self) -> dict:
-        # dict{s.name : s for s in self.stations}
-        return dict(map(lambda s: (s.name, s), self.stations))
+    def __getitem__(self, key:str) -> 'Station' or None:
+        if self.stations:
+            for station in self.stations:
+                if station.name == key:
+                    return station
+            
+        return None
 
-    # TODO: rename to 'list' (so that calls are formed like system.stations.list)
-    @property
-    def stations(self) -> list:
-        if self._stations == None:
-            self.update()
-
-        return self._stations
-
-    def get_station(self, station_name:str) -> 'Station' or None:
-        try:
-            return self.stations_by_name[station_name]
-        except KeyError:
-            return None
+    def __iter__(self):
+        if self.stations:
+            return iter(self.stations)
+        return None # TODO: maybe something should be raised here
 
     def update(self):
         stations = api.System.stations(self.system_name)
-        # list[Station(s) for s in stations['stations']] # TODO
-        self._stations = list(map(lambda s: Station(s), stations['stations']))
+        self.stations = [Station(s) for s in stations['stations']]
 
-    def data(self): # TODO: rename to 'data' 
-        # NOTE: Using
-        # list[station.data() for station in stations] # TODO
-        return list(map(lambda s: s.data(), self._stations))
+    def json_dump(self) -> list:
+        return [station.json_dump() for station in self.stations]
+
+    def get_keys(self, keys: list[str]):
+        return [{key : station.json_dump()[key] for key in keys} for station in self.stations]
+
 
 class Station():
     """
@@ -146,31 +140,25 @@ class Station():
     """
     def __init__(self, station_data:dict):
         self.__dict__ = station_data
-        self._market = None 
+        self.market = None 
 
     def __repr__(self):
         # NOTE: depends on above assignment to self.__dict__ to define self.name and self.haveMarket
         return f'<{self.__module__}.{self.__class__.__name__}(name="{self.name}", haveMarket={self.haveMarket})>'
 
-    @property
-    def market(self) -> 'Market' or None:
-        if self._market == None:
-            self.update_market()
-
-        return self._market
-
     def update_market(self):
         if self.haveMarket:
             market_data = api.System.marketById(self.marketId)
-            self._market = Market(market_data)
+            self.market = Market(market_data)
 
-    def data(self): # TODO: rename to 'data'
-        d = self.__dict__.copy()
-        del d['_market'] # deleting because held <Market> obj is not json serializable. 
+    def json_dump(self) -> dict:
+        dict_copy = self.__dict__.copy()
+        del dict_copy['market'] # deleting because held <Market> obj is not json serializable. 
         
-        #TODO: I wanted to re-format this conditional here. I don't remember how I wanted to do that, though
-        # or why
-        return {'station' : d, 'market' : self._market.__dict__ if self._market else None}
+        dict_copy.update({'market' : self.market.commodities if self.market else None})
+        return dict_copy
+
+    # TODO: add get_key maybe
 
 
 class Market():
