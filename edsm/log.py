@@ -5,8 +5,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, wait, Future
 
 from logging import INFO, DEBUG
-from types import MethodType
-from typing import Any, Callable, Union
+from typing import Callable
 
 import edsm.models as models
 import edsm.api as api
@@ -20,11 +19,9 @@ Designed around collecting data to help spot trends in market and traffic data
 based on the powerplay cycle (regular edsm.net traffic data only goes back one week, market data only one day) 
 """
 
-# TODO: Change all maps with lambdas to regular comprehensions (no time saved)
-
 # TODO: Scheduling
 # TODO: Import config with from calls (not that big a module, but less overhead anyways)
-# TODO: Annotate
+# TODO: Finish annotating
 
 # TODO: ABCs lol
 # 
@@ -64,7 +61,7 @@ class SystemsLogger():
     """
 
     
-    def __init__(self, keys:list[str], delay:int=config.DEFAULT_SLEEP):
+    def __init__(self, keys:dict[str, list[str]], delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
         self.delay = delay
 
@@ -72,11 +69,12 @@ class SystemsLogger():
 
         # to be overwritten by children (TODO: ABCs lol)
         self.filename = f'{self}.json'
-        self.systems_data = None
+        self.systems_data = None # TODO: clunky and weird to have seperate sphere class, 
+                                    # make systems_data var an init arg, and just init it with api.Systems.sphere_systems()
 
-        self.keybind_dict = {
-            'traffic' : self.update_traffic,
-            'stations' : [self.update_stations, self.update_stations_markets]
+        self.update_keybinds = {
+            'traffic' : [self.update_traffic],
+            'stations' :  [self.update_stations, self.update_stations_markets]
         }
 
         # TODO: add check_keys method to make sure provided keys are expected format
@@ -87,64 +85,50 @@ class SystemsLogger():
     @property
     def systems(self) -> list[models.System]:
         if not self._systems:
-            # TODO: change to regular comprehension
-            # list[models.System(d) for d in self.systems_data]
-            self._systems = list(map(lambda d: models.System(d), self.systems_data))
+            self._systems = [models.System(d) for d in self.systems_data]
 
         return self._systems
 
-    def grab_key(self, obj:models.System, key:Union[str, int]) -> Any:
-        # method for grabbing data from <models.System> objects 
-        
-        # TODO: This method belongs in the respective models (models.py) themselves, very
-        # roundabout to do it up here. Move this. (maybe give each model its own .parse_key() method,
-        # so that on this end, we could just feed them the keys, without having to do all this filtering)
-
-        #NOTE: next few commits will have keys being parsed by their respective models instead of here.
-        #NOTE: the expected format for self.keys will also be changing
-        #NOTE: following is example of new expected format for receiving keys.
-        example = {'system' : ['name', 'id', 'coords'], 'traffic' : ['traffic', 'breakdown'], 'stations' : ['markets']}
-
-        # TODO: make this assignment static (to be fixed by above)
-        excepts = (models.Traffic, models.Stations)
-
-        if isinstance(obj.__dict__[key], excepts):
-            return obj.__dict__[key].data() # TODO: editors cant auto refactor vague bits like this, fix
-
-        return obj.__dict__[key]
-
-    # TODO: rename, 'filter' is more accurate than 'gather'
+    # TODO: rename? 'filter' is more accurate than 'gather'
     def gather_by_keys(self) -> list[dict]:
         logging.info("Gathering data by keys")
         # creates a list of dicts containing system data indicated by self.keys
 
-        # list[dict{k : self.grab_key(system, k) for k in self.keys} for system in self.systems]
-        #TODO: just do the comprehension, lambda kills any time saved
-        #NEW: for item in model_dict.items():
-        #       obj = keybinds[item[0]]
-        #       obj.get_keys(item[1])
-        return list(map(lambda system: dict(map(lambda k: (k, self.grab_key(system, k)), self.keys)), self.systems))
+        l = []
+        for system in self.systems:
+            system_data = {}
+            #TODO: there has got to be a better way. more binding dicts?
+
+            for key in self.keys.keys():
+                if key == 'system':
+                    system_data['system'] = system.get_keys(self.keys.get('system'))
+                if key == 'traffic':
+                    system_data['traffic'] = system.traffic.get_keys(self.keys.get('traffic')) 
+                if key == 'stations':
+                    system_data['stations'] = system.stations.get_keys(self.keys.get('stations'))
+
+            l.append(system_data)
+
+        return l
 
     def update_by_keys(self):
         logging.info("Running updates")
         # update depending on which keys are provided
-        if not any([key in self.keybind_dict.keys() for key in self.keys]):
+        if not any([key in self.update_keybinds.keys() for key in self.keys]):
             logging.info("No updates to run")
             
         else:
-            for key in self.keys:
-                binding = self.keybind_dict.get(key)
+            for key in self.keys.keys():
+                # NOTE: using .get() to avoid raising errors
+                binding_list = self.update_keybinds.get(key)
 
-                if isinstance(binding, MethodType):
-                    binding()
-
-                elif isinstance(binding, list):
-                    for func in binding:
-                        func()
+                if binding_list:
+                    for update_routine in binding_list:
+                        update_routine()
 
     def update_traffic(self):
         """Update all <Traffic> objects using :config.MAX_THREADS: workers"""
-        logging.info("Updating traffic")
+        logging.info("Updating traffic") # TODO: create list-like container class for <System> objs, move threading logic there 
         
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             futures = submit_updates(executor, [system.traffic.update for system in self.systems])
@@ -184,7 +168,7 @@ class SystemsLogger():
         return [{'timestamp' : timestamp, 'systems' : system_data}]
 
     
-    #TODO: Change name to specify that it is appending an array (maybe append_json_array())
+    #TODO: Change something here to specify that this func only appends arrays (maybe rename to append_json_array())
     def append_json(self, file:str, data:list[dict]):
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
@@ -210,7 +194,6 @@ class SystemsLogger():
         logging.info("Starting log routine...")
         # TODO: change function name, 'log' might be confusing
         # Timestamps and dumps captured data as json to file :<self>.filename:
-        #TODO: reorganize above methods so that it's easier to follow program flow
         self.update_by_keys()
         
         payload = self.get_payload()
@@ -232,8 +215,9 @@ class SphereLogger(SystemsLogger):
     def __init__(self, center, radius, keys, delay=config.DEFAULT_SLEEP):
         super().__init__(keys, delay=delay)
 
-        self.filename = f"{center} - {radius}ly.json"
-        self.systems_data = api.Systems.sphere_systems(center, radius, showAllInfo=1)
+        self.filename = f"{center} - {radius}ly.json" 
+        self.systems_data = api.Systems.sphere_systems(center, radius, showAllInfo=1) # NOTE TODO: showAllInfo clunky and wasteful, 
+                                                                                        # should toggle flags based on keys
 
         # TODO: method for updating systems data!
 """
