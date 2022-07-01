@@ -20,11 +20,12 @@ based on the powerplay cycle (regular edsm.net traffic data only goes back one w
 """
 
 # TODO: Scheduling
-# TODO: Import config with from calls (not that big a module, but less overhead anyways)
+# TODO: Import config with from calls? (not that big a module, but less overhead anyways)
 # TODO: Finish annotating
 
 # TODO: ABCs lol
 # 
+# TODO: Make examples.py file with some example driver code.
 
 logging.basicConfig(level=INFO)
 
@@ -47,19 +48,21 @@ def check_futures(futures:list[Future]):
 class SystemsLogger():
     """
     __init__
-        arg keys* <list> - keys to grab from <System> objects in self._systems when logging
-        arg delay <int> - amount of time to wait after collecting data. Defaults to config.DEFAULT_SLEEP
+        arg keys* <list> - keys to grab from <System> objects in self._systems when logging\ 
+        arg delay <int> - amount of time to wait after collecting data. Defaults to config.DEFAULT_SLEEP\ 
+
+    attr systems_data <list[dict]>
 
     property systems <list> - list of systems being managed by <Self>
 
-    method parse_key(obj, key) <Any> - grabs given keys from given object
-        arg obj* <models.System>
-        arg key* <str or int>
+    method parse_key(obj, key) <Any> - grabs given keys from given object\ 
+        arg obj* <models.System>\ 
+        arg key* <str or int>\ 
 
-    method gather_keys <list>
-    method update_by_keys <None>
+    method gather_keys <list>\ 
+    method update_by_keys <None> #TODO: revise this docstring
     """
-
+    # TODO: add add_, get_, and remove_system methods and add_, get_, and remove_by_name methods
     
     def __init__(self, keys:dict[str, list[str]], delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
@@ -79,19 +82,20 @@ class SystemsLogger():
 
         # TODO: add check_keys method to make sure provided keys are expected format
         # NOTE: no data is saved if an exception is thrown in the middle of running updates (self.update_by_keys)
-        # so it is very important that provided keys are clean and parseable BEFORE running updates. 
+        # so it is very important that provided keys (passed as arg 'keys') are clean and parseable BEFORE running updates. 
 
     
     @property
     def systems(self) -> list[models.System]:
         if not self._systems:
             self._systems = [models.System(d) for d in self.systems_data]
+            # TODO: does this need to be generated like this?
 
-        return self._systems
+        return self._systems 
 
     # TODO: rename? 'filter' is more accurate than 'gather'
     def gather_by_keys(self) -> list[dict]:
-        logging.info("Gathering data by keys")
+        logging.info("Gathering requested data")
         # creates a list of dicts containing system data indicated by self.keys
 
         l = []
@@ -119,7 +123,7 @@ class SystemsLogger():
             
         else:
             for key in self.keys.keys():
-                # NOTE: using .get() to avoid raising errors
+                # NOTE: using .get() to avoid raising KeyError
                 binding_list = self.update_keybinds.get(key)
 
                 if binding_list:
@@ -128,7 +132,7 @@ class SystemsLogger():
 
     def update_traffic(self):
         """Update all <Traffic> objects using :config.MAX_THREADS: workers"""
-        logging.info("Updating traffic") # TODO: create list-like container class for <System> objs, move threading logic there 
+        logging.info("Updating traffic") # TODO: create list-like container class for <System> objs, (+ then move threading logic there?) 
         
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
             futures = submit_updates(executor, [system.traffic.update for system in self.systems])
@@ -156,13 +160,17 @@ class SystemsLogger():
             check_futures(futures)
 
     def get_payload(self) -> list[dict]:
-        """ Return list containing dicts containing payload (timstamp + systems data)"""
+        """ 
+        Returns collected system data with timestamp
+        Returns a dict wrapped in a list for convenience when calling self.append_json()
+        """
 
         # Returned in this format for the sake of convienience when calling self.append_json()
-        logging.info("Building payload")
 
         timestamp = int(time.time())
         system_data = self.gather_by_keys()
+
+        logging.info("Building payload")
 
         # TODO: Model as class?
         return [{'timestamp' : timestamp, 'systems' : system_data}]
@@ -173,7 +181,7 @@ class SystemsLogger():
         # expecting data from file to be parseable as json array
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
         # should stop/throw warning if there is data but its not valid json. TODO: narrow second exception)
-        logging.info(f"Writing payload to file: \'{self.filename}\'")
+        logging.info(f"Appending payload to file: \'{self.filename}\'")
         try:
             file_read = open(file, 'r')
             old_data = json.loads(file_read.read())
@@ -191,7 +199,7 @@ class SystemsLogger():
         file_write.close()
 
     def log(self):
-        logging.info("Starting log routine...")
+        logging.info(f"{self} starting log routine...")
         # TODO: change function name, 'log' might be confusing
         # Timestamps and dumps captured data as json to file :<self>.filename:
         self.update_by_keys()
@@ -200,12 +208,13 @@ class SystemsLogger():
         self.append_json(self.filename, payload)
     
     def sleep(self):
-        sleep_time = time.strftime("%H:%M:%S", time.localtime())
-        logging.info(f"{self} :SLEEPING: for {self.delay} seconds (since {sleep_time})")
+        sleep_start = time.strftime("%H:%M:%S", time.localtime())
+        logging.info(f"{self} SLEEPING for {self.delay} seconds (since {sleep_start})")
 
         time.sleep(self.delay)
 
     def run(self):
+        """Run self.log() and sleep on an infinite loop"""
         while True:
             self.log()
             self.sleep()
@@ -219,7 +228,7 @@ class SphereLogger(SystemsLogger):
         self.systems_data = api.Systems.sphere_systems(center, radius, showAllInfo=1) # NOTE TODO: showAllInfo clunky and wasteful, 
                                                                                         # should toggle flags based on keys
 
-        # TODO: method for updating systems data!
+        # TODO: method for updating system information!
 """
 class SphereLogger():
     def __init__(self, sphere: traffic.TrafficSphere, sleep):
