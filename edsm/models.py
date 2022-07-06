@@ -2,10 +2,65 @@ import edsm.api as api
 
 # TODO: Logging
 
-# NOTE: 'json_dump' methods are meant to return a json-serializable representation of each model
-# NOTE: 'get_keys' methods are meant allow getting json-serializable attr with given keys 
+# NOTE: 'json_dump' methods are meant to return a json-serializable representation of each model with redundant info removed
+# NOTE: 'get_keys' methods are meant allow capturing specific attirbutes returned in 'json_dump' methods
 
 # TODO: automate getting rid of redundancies in output (i.e. system name is listed in system, traffic, and station data)
+# TODO: create container model for <System> objects. Can hold get, set, remove logic (as opposed to having to do that in log.py)
+
+class Systems():
+    # Container for <System>, (will have the threading logic seen in edsm/log.py)
+    def __init__(self):
+        self.list = []
+
+    def __delitem__(self, key):
+        self.list.remove(self.get(key))
+
+    def __getitem__(self, key:str):
+        for item in self.list:
+            name = item.__dict__.get('name')
+            if name and (name == key):
+                return item
+        
+        else:
+            raise KeyError(f"No system with name \'{key}\'")
+    
+    def __iter__(self):
+        return iter(self.list)
+        
+    def get(self, key:str):
+        # Returns star system with given name, returns None if not found
+        try:
+            r = self[key]
+            return r
+
+        except KeyError:
+            return None
+
+    def add_system(self, system_data:dict):
+        # appends system data (dict) to self.systems
+        self.list.append(System(system_data))
+
+    def remove(self, system_name:str):
+        try:
+            del self[system_name]
+        
+        # NOTE: might need to catch KeyError, check later
+        except ValueError:
+            pass
+
+    def update_traffic(self):
+        pass
+
+    def update_stations(self):
+        pass
+
+    def get_keys(self):
+        pass
+
+    def json_dump(self):
+        pass
+
 
 class System():
     """
@@ -60,8 +115,6 @@ class Traffic():
         self.traffic = api.System.traffic(self.system_name)
 
     def json_dump(self) -> dict:
-        # NOTE: using underscored vars here to avoid unwanted calls to self.update() during
-        # calls to self.data()
         if self.traffic:
             return {'traffic' : self.traffic['traffic'], 'breakdown' : self.traffic['breakdown']}
 
