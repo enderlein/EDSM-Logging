@@ -11,7 +11,11 @@ import edsm.config as config
 # TODO: automate getting rid of redundancies in output (i.e. system name is listed in system, traffic, and station data)
 
 class Systems():
-    # Container for <System>, (will have the threading logic seen in edsm/log.py)
+    """
+    Dict-like container class for <System> objects.
+
+    Threads updates.
+    """
 
     def __init__(self):
         self.list = []
@@ -51,9 +55,7 @@ class Systems():
         # NOTE: not excepting KeyError because ValueError from call to del eats KeyError from call to self[bad_key]
         except ValueError:
             pass
-    
-    # NOTE: both of the 2 following staticmethods can be merged into one. 
-    # should they be? 
+
     @staticmethod
     def submit_updates(executor:ThreadPoolExecutor, tasks:list[Callable[[None], None]]):
         futures = []
@@ -135,19 +137,20 @@ class System():
     arg: system_data* <dict> - a dict containing system data 
     returned from call to edsm.api.Systems.*
     
-    property: stations <Stations>\ 
-    property: traffic <Traffic> TODO: update this docstring 
+    property: stations <Stations>
+    property: traffic <Traffic>
 
-    method: get_keys (keys) <dict>
-        arg: keys* <list<dict>>
+    method: json_dump <dict or None>
+    method: get_keys (keys) <dict or None>
+        arg: keys <list[str]>
 
-    attr: name <str>\ 
-    attr: id <int or None>\ 
-    attr: id64 <int or None>\ 
-    attr: coords <dict or None>\ 
-    attr: coordsLocked <bool or None>\ 
-    attr: requirePermit <bool or None>\ 
-    attr: information <dict or None>\ 
+    attr: name <str>
+    attr: id <int or None>
+    attr: id64 <int or None>
+    attr: coords <dict or None>
+    attr: coordsLocked <bool or None>
+    attr: requirePermit <bool or None>
+    attr: information <dict or None>
     attr: primaryStar <dict or None>
     """
     def __init__(self, system_data:dict):
@@ -155,7 +158,7 @@ class System():
         self.__dict__ = system_data.copy()
         self.data = system_data
 
-        # NOTE: depends on assignment to self.__dict__ to define self.name
+        # NOTE: depends on assignment to self.__dict__ to define self.name. Maybe a bad idea?
         # TODO: conditionals for assigning these??? so we're not wasting time initializing these if theyre not needed
         self.stations = Stations(self.name)
         self.traffic = Traffic(self.name)
@@ -169,30 +172,40 @@ class System():
 
 class Traffic():
     """
-    Models response from EDSM System/traffic endpoint.
+    Models response from EDSM System/traffic endpoint. 
     Child of <System> objects.
 
-    arg: system_name* <str> - name of system 
+    arg: system_name* <str> - name of system
 
-    method: update <None> - populates 
+    property: dict <dict or None>
 
-    property: data
+    method: update <None>
+    method: json_dump <dict or None>
+
+    method: get_keys (keys) <dict or None>
+        arg: keys <list[str]>
+    
+    attr: traffic <dict>
+    attr: breakdown <dict>
+
+    TODO: doc rest of attributes from api response
     """
     def __init__(self, system_name:str):
         self.system_name = system_name
-        self.data = None
+        self.dict = None
 
     def update(self) -> None:
-        self.data = api.System.traffic(self.system_name)
-
+        self.dict = api.System.traffic(self.system_name)
+        self.__dict__ = self.dict.copy()
+        
     def json_dump(self) -> dict:
-        if self.data:
-            return {'traffic' : self.data['traffic'], 'breakdown' : self.data['breakdown']}
+        if self.dict:
+            return {'traffic' : self.dict['traffic'], 'breakdown' : self.dict['breakdown']}
 
         return None
 
     def get_keys(self, keys: list[str]):
-        if self.data:
+        if self.dict:
             return {key : self.json_dump()[key] for key in keys}
 
         # TODO: log warning to tell user that func will return None until corresponding obj is updated (populated with api data)
@@ -206,13 +219,15 @@ class Stations():
 
     arg: system_name* <str> - name of system
 
-    property: stations <list>\ 
-    property: stations_by_name <dict>
-
-    method: get_station(station_name) <Station or None>
-        arg: station_name* <str>
+    property: list <list> - list of contained stations
 
     method: update <None>
+    method: json_dump <dict or None>
+
+    method: get_keys (keys) <dict or None>
+        arg: keys <list[str]>
+
+    TODO: doc attributes from api response
     """
     def __init__(self, system_name):
         self.system_name = system_name
@@ -251,27 +266,29 @@ class Stations():
 
 class Station():
     """
-    arg station_data* <dict>
-
-    attr id <int>
-    attr marketId <int>
-    attr type <int>
-    attr name <str>
-    attr distanceToArrival <int>
-    attr allegiance <str>
-    attr government <str>
-    attr economy <str>
-    attr secondEconomy <str>
-    attr haveMarket <bool>
-    attr haveShipyard <bool>
-    attr haveOutfitting <bool>
-    attr otherServices <list>
-    attr updateTime <dict>
-
-    property market <Market or None>
-
     Models individual station objects from array received in response from EDSM System/stations endpoint.
     Direct child of <Stations> objects.
+
+    arg: station_data* <dict>
+
+    property: market <Market or None>
+
+    method: json_dump <dict>
+    
+    attr: id <int>
+    attr: marketId <int>
+    attr: type <int>
+    attr: name <str>
+    attr: distanceToArrival <int>
+    attr: allegiance <str>
+    attr: government <str>
+    attr: economy <str>
+    attr: secondEconomy <str>
+    attr: haveMarket <bool>
+    attr: haveShipyard <bool>
+    attr: haveOutfitting <bool>
+    attr: otherServices <list>
+    attr: updateTime <dict>
     """
     def __init__(self, station_data:dict):
         self.__dict__ = station_data
@@ -298,15 +315,15 @@ class Station():
 
 class Market():
     """
-    arg market_data* <dict>
+    arg: market_data* <dict>
 
-    attr id <int> - system ID
-    attr id64 <int> - system ID64
-    attr name <str> - system name
-    attr marketId <int>
-    attr sId <int> - station ID
-    attr sName <str> - station name
-    attr commodities <dict>
+    attr: id <int> - system ID
+    attr: id64 <int> - system ID64
+    attr: name <str> - system name
+    attr: marketId <int>
+    attr: sId <int> - station ID
+    attr: sName <str> - station name
+    attr: commodities <dict>
 
     Models station market data.
     Direct chiild of <Station> objects
