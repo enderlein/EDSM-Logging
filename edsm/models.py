@@ -1,18 +1,21 @@
-import edsm.api as api
+from concurrent.futures import ThreadPoolExecutor, wait, Future
+from typing import Callable
 
+import edsm.api as api
+import edsm.config as config
 # TODO: Logging
 
 # NOTE: 'json_dump' methods are meant to return a json-serializable representation of each model with redundant info removed
 # NOTE: 'get_keys' methods are meant allow capturing specific attirbutes returned in 'json_dump' methods
 
 # TODO: automate getting rid of redundancies in output (i.e. system name is listed in system, traffic, and station data)
-# TODO: create container model for <System> objects. Can hold get, set, remove logic (as opposed to having to do that in log.py)
 
 class Systems():
     # Container for <System>, (will have the threading logic seen in edsm/log.py)
+
     def __init__(self):
         self.list = []
-
+        
     def __delitem__(self, key):
         self.list.remove(self.get(key))
 
@@ -49,18 +52,80 @@ class Systems():
         except ValueError:
             pass
     
+    # NOTE: both of the 2 following staticmethods can be merged into one. 
+    # should they be? 
+    @staticmethod
+    def submit_updates(executor:ThreadPoolExecutor, tasks:list[Callable[[None], None]]):
+        futures = []
+        for task in tasks:
+            future = executor.submit(task)
+            futures.append(future)
+
+        return futures
+
+    @staticmethod
+    def check_futures(futures:list[Future]):
+        wait(futures)
+        
+        for future in futures:
+            if future.exception():
+                raise future.exception()
+
     # TODO: come up with tests for update funcs
     def update_traffic(self):
-        pass
+        with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
+            futures = self.submit_updates(executor, [system.traffic.update for system in self.list])
+            self.check_futures(futures)
 
     def update_stations(self):
-        pass
+        with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
+            futures = self.submit_updates(executor, [system.stations.update for system in self.list])
+            self.check_futures(futures)
 
-    def get_keys(self):
-        pass
+    def update_stations_markets(self):
+        with ThreadPoolExecutor(max_workers=config.MAX_THREADS) as executor:
+            tasks = []
+            for system in self.list:
+                for station in system.stations.list: # NOTE: no comprehension because 2+layer comps are confusing
+                    tasks.append(station.update_market)
+
+            futures = self.submit_updates(executor, tasks)
+            self.check_futures(futures)
+
+    def get_keys(self, keys_dict:dict[str, list[str]]):
+        payload = []
+
+        #TODO: not dynamic. a more 'dynamic' implementation would 'know' all possible keys and what to do with them. 
+            # or refer to another obj that 'knows'. 
+
+        for system in self.list:
+            d = {}
+
+            for k, keys_list in keys_dict.items():
+                # keybinds[k].get_keys(keys_dict[k])
+                if k == 'system':
+                    d[k] = system.get_keys(keys_list)
+
+                if k == 'traffic':
+                    d[k] = system.traffic.get_keys(keys_list)
+
+                if k == 'stations':
+                    d[k] = system.stations.get_keys(keys_list)
+                
+
+                payload.append(d)
+
+        return payload
 
     def json_dump(self):
-        pass
+        return [
+                    {
+                        'system' : system.json_dump(), 
+                        'traffic' : system.traffic.json_dump(), 
+                        'stations' : system.stations.json_dump()
+                    }   for system in self.list
+                ]
+
 
 
 class System():
@@ -87,7 +152,8 @@ class System():
     """
     def __init__(self, system_data:dict):
         # TODO: needs harder typing, system_data should always be a dict, no exceptions
-        self.__dict__ = system_data
+        self.__dict__ = system_data.copy()
+        self.data = system_data
 
         # NOTE: depends on assignment to self.__dict__ to define self.name
         # TODO: conditionals for assigning these??? so we're not wasting time initializing these if theyre not needed
@@ -95,7 +161,10 @@ class System():
         self.traffic = Traffic(self.name)
 
     def get_keys(self, keys: list[str]):
-        return {key : self.__dict__[key] for key in keys}
+        return {key : self.data[key] for key in keys}
+
+    def json_dump(self):
+        return self.data
 
 
 class Traffic():
@@ -107,23 +176,27 @@ class Traffic():
 
     method: update <None> - populates 
 
-    property: daat
+    property: data
     """
     def __init__(self, system_name:str):
         self.system_name = system_name
-        self.traffic = None
+        self.data = None
 
     def update(self) -> None:
-        self.traffic = api.System.traffic(self.system_name)
+        self.data = api.System.traffic(self.system_name)
 
     def json_dump(self) -> dict:
-        if self.traffic:
-            return {'traffic' : self.traffic['traffic'], 'breakdown' : self.traffic['breakdown']}
+        if self.data:
+            return {'traffic' : self.data['traffic'], 'breakdown' : self.data['breakdown']}
 
         return None
 
-    def get_keys(self, keys: list[str]): # TODO: raises TypeError when traffic data hasn't been updated. Let user know they need to update first.
-        return {key : self.json_dump()[key] for key in keys}
+    def get_keys(self, keys: list[str]):
+        if self.data:
+            return {key : self.json_dump()[key] for key in keys}
+
+        # TODO: log warning to tell user that func will return None until corresponding obj is updated (populated with api data)
+        return None
 
 
 class Stations():
@@ -143,30 +216,37 @@ class Stations():
     """
     def __init__(self, system_name):
         self.system_name = system_name
-        self.stations = None
+        self.list = None
 
     def __getitem__(self, key:str) -> 'Station' or None:
-        if self.stations:
-            for station in self.stations:
+        if self.list:
+            for station in self.list:
                 if station.name == key:
                     return station
             
-        return None
+            else:
+                raise KeyError(f"No station found with name {key}")
 
     def __iter__(self):
-        if self.stations:
-            return iter(self.stations)
+        if self.list:
+            return iter(self.list)
         return None # TODO: maybe something should be raised here
 
     def update(self):
         stations = api.System.stations(self.system_name)
-        self.stations = [Station(s) for s in stations['stations']]
+        self.list = [Station(s) for s in stations['stations']]
 
     def json_dump(self) -> list:
-        return [station.json_dump() for station in self.stations]
+        if self.list:
+            return [station.json_dump() for station in self.list]
+
+        return None
 
     def get_keys(self, keys: list[str]):
-        return [{key : station.json_dump()[key] for key in keys} for station in self.stations]
+        if self.list:
+            return [{key : station.json_dump()[key] for key in keys} for station in self.list]
+
+        return None
 
 
 class Station():
@@ -234,5 +314,5 @@ class Market():
     def __init__(self, market_data):
         self.__dict__ = market_data
         
-        # TODO: model commodities
+        # TODO: model commodities?
         # TODO: update method?
