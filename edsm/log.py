@@ -62,7 +62,6 @@ class SystemsLogger():
     method gather_keys <list>\ 
     method update_by_keys <None> #TODO: revise this docstring
     """
-    # TODO: add add_, get_, and remove_system methods and add_, get_, and remove_by_name methods
     
     def __init__(self, keys:dict[str, list[str]], delay:int=config.DEFAULT_SLEEP):
         self.keys = keys
@@ -83,6 +82,7 @@ class SystemsLogger():
         # TODO: add check_keys method to make sure provided keys are expected format
         # NOTE: no data is saved if an exception is thrown in the middle of running updates (self.update_by_keys)
         # so it is very important that provided keys (passed as arg 'keys') are clean and parseable BEFORE running updates. 
+        # NOTE: we could just chunk download
 
     
     @property
@@ -101,7 +101,8 @@ class SystemsLogger():
         l = []
         for system in self.systems:
             system_data = {}
-            #TODO: there has got to be a better way. more binding dicts?
+            #TODO: too 'static'. a more 'dynamic' implementation would 'know' all possible keys and what to do with them. 
+            # or refer to another obj that 'knows'. maybe use a binding dict?
 
             for key in self.keys.keys():
                 if key == 'system':

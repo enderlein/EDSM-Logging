@@ -45,10 +45,11 @@ class Systems():
         try:
             del self[system_name]
         
-        # NOTE: might need to catch KeyError, check later
+        # NOTE: not excepting KeyError because ValueError from call to del eats KeyError from call to self[bad_key]
         except ValueError:
             pass
-
+    
+    # TODO: come up with tests for update funcs
     def update_traffic(self):
         pass
 
@@ -85,10 +86,11 @@ class System():
     attr: primaryStar <dict or None>
     """
     def __init__(self, system_data:dict):
+        # TODO: needs harder typing, system_data should always be a dict, no exceptions
         self.__dict__ = system_data
 
         # NOTE: depends on assignment to self.__dict__ to define self.name
-        # TODO: conditionals for assigning these??? so we're not wasting time creating these if theyre not needed
+        # TODO: conditionals for assigning these??? so we're not wasting time initializing these if theyre not needed
         self.stations = Stations(self.name)
         self.traffic = Traffic(self.name)
 
