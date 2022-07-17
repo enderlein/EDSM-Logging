@@ -6,7 +6,7 @@ MAX_THREADS = 20
 DEFAULT_SLEEP = 3600
 
 # Defines 'User-Agent' in the header for all requests to EDSM API
-USER_AGENT = "TrafficHistory"
+USER_AGENT = ""
 
 # Defines number of spaces to use for indentation when writing to json. 
 # Set to None for no indent (smaller file size)
