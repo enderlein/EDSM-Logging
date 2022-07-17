@@ -10,7 +10,9 @@ from edsm.models import System
 class TrafficTest(unittest.TestCase):
     def test_Traffic_Sol(self):
         t = Traffic('Sol')
-        self.assertIs(type(t.breakdown), dict)
+        t.update()
+
+        self.assertIs(type(t.dict), dict)
 
 class SystemsTest(unittest.TestCase):
     with open('tests/api_sphere_systems.json', 'r') as f:
