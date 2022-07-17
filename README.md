@@ -8,8 +8,7 @@ Check `log.py` for an example implementation of `models.py`
 
 Check `example.py` for some example driver code for `log.py`
 
-I use this to store market and traffic data for [graphing](https://github.com/altair-viz/altair) 
-If you enjoy doing piracy in Elite: Dangerous, this tool can help with that, too :^)
+I use this to store market and traffic data for [graphing](https://github.com/altair-viz/altair). If you enjoy doing piracy in Elite: Dangerous, this tool can help with that, too :^)
 
 You can also use the stuff under `edsm/api.py` as a barebones Python interface for some EDSM API endpoints.
 
