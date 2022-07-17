@@ -11,8 +11,8 @@ import edsm.config as config
 """
 For storing timstamped system data.
 
-Designed around collecting historical data to help spot trends in market and traffic data 
-based on the powerplay cycle (regular edsm.net traffic data only goes back one week, market data only one day) 
+Made for collecting historical data to help spot trends in market and traffic data 
+(traffic data on edsm.net only goes back one week, market data only one day) 
 """
 
 # TODO: Finish annotating
