@@ -196,7 +196,7 @@ class Traffic():
 
     def update(self) -> None:
         self.dict = api.System.traffic(self.system_name)
-        self.__dict__ = self.dict.copy()
+        self.__dict__.update(self.dict.copy()) # TODO: review
         
     def json_dump(self) -> dict:
         if self.dict:
@@ -274,7 +274,7 @@ class Station():
     property: market <Market or None>
 
     method: json_dump <dict>
-    
+
     attr: id <int>
     attr: marketId <int>
     attr: type <int>
