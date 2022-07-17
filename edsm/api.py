@@ -75,7 +75,7 @@ class System():
     def factions(self, systemName, showHistory = 0):
         """
         systemName* <string> - name of system
-        showHistory <int> - show factions history (0 : False, 1 : True)
+        showHistory <bool> - show factions history
 
         returns <dict>
 
@@ -91,20 +91,20 @@ class Systems():
     url_base = "https://www.edsm.net/api-v1/"
 
     @classmethod
-    def system(self, systemName, showId = 0, 
-        showCoordinates = 0, showPermit = 0, showInformation = 0, 
-        showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
+    def system(self, systemName:str, showId:bool = 0, 
+        showCoordinates:bool = 0, showPermit:bool = 0, showInformation:bool = 0, 
+        showPrimaryStar:bool = 0, includeHidden:bool = 0, showAllInfo:bool = 0):
         """
-        systemName* <string> - name of system
+        arg: systemName* <string> - name of system
 
-        showId <int> - (0 : False, 1 : True)
-        showCoordinates <int> - (0 : False, 1 : True) TODO: 0,1 elaboration not needed
-        showPermit <int> - (0 : False, 1 : True)
-        showInformation <int> - (0 : False, 1 : True)
-        showPrimaryStar <int> - (0 : False, 1 : True)
-        includeHidden <int> - (0 : False, 1 : True)
+        arg: showId <bool>
+        arg: showCoordinates <bool>
+        arg: showPermit <bool>
+        arg: showInformation <bool>
+        arg: showPrimaryStar <bool>
+        arg: includeHidden <bool>
 
-        showAllInfo <int> - 0 : False, 1 : True - whether to set all optional args to 1
+        arg: showAllInfo <bool> - whether to set all optional args to True
 
         returns <dict>
 
@@ -131,21 +131,21 @@ class Systems():
         return query(self.url_base + endpoint, params)
         
     @classmethod
-    def sphere_systems(self, systemName, radius, showId = 0, 
-        showCoordinates = 0, showPermit = 0, showInformation = 0, 
-        showPrimaryStar = 0, includeHidden = 0, showAllInfo = 0):
+    def sphere_systems(self, systemName:str, radius:int, showId:bool = 0, 
+        showCoordinates:bool = 0, showPermit:bool = 0, showInformation:bool = 0, 
+        showPrimaryStar:bool = 0, includeHidden:bool = 0, showAllInfo:bool = 0):
         """
-        systemName* <string> - name of system at the center of the radius
-        radius* <int> - radius of search sphere (in lightyears)
+        arg: systemName* <string> - name of system at the center of the radius
+        arg: radius* <int> - radius of search sphere (in lightyears)
 
-        showId <int> - (0 : False, 1 : True)
-        showCoordinates <int> - (0 : False, 1 : True)
-        showPermit <int> - (0 : False, 1 : True)
-        showInformation <int> - (0 : False, 1 : True)
-        showPrimaryStar <int> - (0 : False, 1 : True)
-        includeHidden <int> - (0 : False, 1 : True)
+        arg: showId <bool>
+        arg: showCoordinates <bool>
+        arg: showPermit <bool> 
+        arg: showInformation <bool>
+        arg: showPrimaryStar <bool>
+        arg: includeHidden <bool>
 
-        showAllInfo <int> - 0 : False, 1 : True - whether to set all optional args to 1
+        arg: showAllInfo <bool> - whether to set all optional args to True
 
         returns <dict>
 
