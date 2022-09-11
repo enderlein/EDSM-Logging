@@ -97,8 +97,8 @@ class Systems():
     def get_keys(self, keys_dict:dict[str, list[str]]):
         payload = []
 
-        #TODO: not dynamic. a more 'dynamic' implementation would 'know' all possible keys and what to do with them. 
-            # or refer to another obj that 'knows'. 
+        # TODO: put the key-checking stuff somewhere else
+        # TODO: and make it read better
 
         for system in self.list:
             d = {}
@@ -113,9 +113,8 @@ class Systems():
 
                 if k == 'stations':
                     d[k] = system.stations.get_keys(keys_list)
-                
 
-                payload.append(d)
+            payload.append(d)
 
         return payload
 
