@@ -29,7 +29,6 @@ class Logger():
         # to be overwritten by children (TODO: ABCs lol)
         self.filename = f'{self}.json'
 
-
     def update_by_keys(self):
         """
         Run updates depending on which keys are provided. 
@@ -61,7 +60,7 @@ class Logger():
     def append_json(self, file:str, data:list[dict]):
         """
         Appends json data to .json file.
-        Assumes that file is either empty or has top-level JSON array.
+        Assumes that file is either empty or that its top-level object is a JSON array.
         """
 
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
