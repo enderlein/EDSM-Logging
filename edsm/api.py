@@ -83,7 +83,7 @@ class System():
         """
 
         endpoint = "factions"
-        params = {'systemName' : systemName, 'showHistory' : showHistory}
+        params = {'systemName' : systemName, 'showHistory' : int(showHistory)}
 
         return query(self.url_base + endpoint, params)
 
@@ -121,12 +121,12 @@ class Systems():
 
         endpoint = "system"
         params = {'systemName' : systemName, 
-        'showId' : showId,
-        'showCoordinates' : showCoordinates,
-        'showPermit' : showPermit,
-        'showInformation' : showInformation,
-        'showPrimaryStar' : showPrimaryStar,
-        'includeHidden' : includeHidden}
+        'showId' : int(showId),
+        'showCoordinates' : int(showCoordinates),
+        'showPermit' : int(showPermit),
+        'showInformation' : int(showInformation),
+        'showPrimaryStar' : int(showPrimaryStar),
+        'includeHidden' : int(includeHidden)}
 
         return query(self.url_base + endpoint, params)
         
@@ -151,7 +151,6 @@ class Systems():
 
         Queries EDSM to get information on systems within a sphere radius of given system
         """
-
         if showAllInfo:
             showId = 1
             showCoordinates = 1
@@ -161,13 +160,14 @@ class Systems():
             includeHidden = 1
 
         endpoint = "sphere-systems"
+
         params = {'systemName' : systemName, 
         'radius' : radius, 
-        'showId' : showId,
-        'showCoordinates' : showCoordinates,
-        'showPermit' : showPermit,
-        'showInformation' : showInformation,
-        'showPrimaryStar' : showPrimaryStar,
-        'includeHidden' : includeHidden}
+        'showId' : int(showId),
+        'showCoordinates' : int(showCoordinates),
+        'showPermit' : int(showPermit),
+        'showInformation' : int(showInformation),
+        'showPrimaryStar' : int(showPrimaryStar),
+        'includeHidden' : int(includeHidden)}
 
         return query(self.url_base + endpoint, params)
