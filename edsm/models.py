@@ -55,6 +55,10 @@ class Systems():
         # NOTE: not excepting KeyError because ValueError from call to del eats KeyError from call to self[bad_key]
         except ValueError:
             pass
+    
+    def populate(self, systems_data:list[dict]):
+        for system in systems_data:
+            self.add_system(system)
 
     @staticmethod
     def submit_updates(executor:ThreadPoolExecutor, tasks:list[Callable[[None], None]]):
@@ -72,7 +76,7 @@ class Systems():
         for future in futures:
             if future.exception():
                 raise future.exception()
-
+            
     # TODO: come up with tests for update funcs
     def update_traffic(self):
         with ThreadPoolExecutor(max_workers = config.MAX_THREADS) as executor:
@@ -163,6 +167,8 @@ class System():
         self.traffic = Traffic(self.name)
 
     def get_keys(self, keys: list[str]):
+        # TODO: Include error for when information requested by keys is not included in response data
+        # as of now, program just throws KeyError and exit
         return {key : self.data[key] for key in keys}
 
     def json_dump(self):
