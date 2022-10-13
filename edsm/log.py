@@ -27,12 +27,14 @@ class Logger():
         self.systems = models.Systems()
 
         # to be overwritten by children (TODO: ABCs lol)
-        self.filename = f'{self}.json'
+        self.filepath = f'{self}.json'
 
     def update_by_keys(self):
         """
         Run updates depending on which keys are provided. 
         """
+
+        # TODO: make this grab keys to check from a file or smth 
         if 'traffic' in self.keys:
             logging.info("Updating traffic")
             self.systems.update_traffic()
@@ -57,17 +59,17 @@ class Logger():
         return [{'timestamp' : timestamp, 'data' : data}]
 
     #TODO: Change something here to specify that this func only appends arrays (maybe rename to append_json_array())
-    def append_json(self, file:str, data:list[dict]):
+    def append_json(self, data:list[dict]):
         """
-        Appends json data to .json file.
+        Appends json data to .json file (defined as self.filepath).
         Assumes that file is either empty or that its top-level object is a JSON array.
         """
 
         # default old_data to empty list if given file doesn't exist or has invalid json (really only want to check for empty files, 
         # should stop/throw warning if there is data but its not valid json. TODO: narrow second exception)
-        logging.info(f"Appending payload to file: \'{self.filename}\'")
+        logging.info(f"Appending payload to file: \'{self.filepath}\'")
         try:
-            file_read = open(file, 'r')
+            file_read = open(self.filepath, 'r')
             old_data = json.loads(file_read.read())
             file_read.close()
                 
@@ -75,9 +77,10 @@ class Logger():
             # TODO: log exception (as warning)
             old_data = []
 
+        # TODO: needs to create subfolders if they dont exist
         merged_data = json.dumps(old_data + data, indent=config.JSON_INDENT)
 
-        file_write = open(file, 'w')
+        file_write = open(self.filepath, 'w')
         file_write.write(merged_data)
 
         file_write.close()
@@ -88,7 +91,7 @@ class Logger():
         self.update_by_keys()
 
         payload = self.generate_payload()
-        self.append_json(self.filename, payload)
+        self.append_json(payload)
     
     def sleep(self, delay):
         sleep_start = time.strftime("%H:%M:%S", time.localtime())
