@@ -12,7 +12,7 @@ keys = {'system' : ['name', 'coords'], 'traffic' : ['traffic', 'breakdown']}
 logger = edsm.log.Logger(keys = keys)
 
 # set filename to 'test.json' (optional)
-logger.filename = 'test.json'
+logger.filepath = 'test.json'
 
 # query edsm.net for star systems within 8 ly of star system 'Sol'
 sphere_data = edsm.api.Systems.sphere_systems('Sol', radius = 8, showCoordinates=True)
@@ -27,7 +27,7 @@ logger.log()
 
 # Doing some stuff to the data
 MIN_TRAFFIC = 5
-with open(logger.filename, 'r') as f:
+with open(logger.filepath, 'r') as f:
     datalog = json.loads(f.read())
 
     for item in datalog:
