@@ -34,7 +34,7 @@ class Logger():
         Run updates depending on which keys are provided. 
         """
 
-        # TODO: make this grab keys to check from a file or smth 
+        # TODO: make this grab keys to check from a standalone file
         if 'traffic' in self.keys:
             logging.info("Updating traffic")
             self.systems.update_traffic()
