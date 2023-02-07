@@ -1,5 +1,5 @@
 # EDSM Logger
-A tool for logging data from edsm.net
+A tool for collecting periodic market traffic data from edsm.net
 
 # Usage
 The models defined in `models.py` bundle data from the 'systems', 'traffic', 'station', and 'market' endpoints under a single container model (see class `Systems` in `models.py`)
